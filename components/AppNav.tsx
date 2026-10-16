@@ -124,7 +124,7 @@ export default function AppNav() {
             <Link
               href="/settings"
               aria-label={t("nav.settings")}
-              className={`flex h-10 w-10 items-center justify-center rounded-full bg-accent font-extrabold text-white transition-transform hover:scale-105 ${
+              className={`flex h-10 w-10 items-center justify-center rounded-full bg-accent font-extrabold text-[#1a1208] transition-transform hover:scale-105 ${
                 isActive("/settings") ? "ring-2 ring-white/40" : ""
               }`}
             >

@@ -286,7 +286,7 @@ export default function CallPage({
           </p>
           <button
             onClick={() => router.push("/match")}
-            className="mt-6 rounded-full bg-accent px-8 py-3.5 font-extrabold text-white"
+            className="mt-6 rounded-full bg-accent px-8 py-3.5 font-extrabold text-[#1a1208]"
           >
             {t("common.back")}
           </button>
@@ -298,7 +298,7 @@ export default function CallPage({
           <p className="text-lg font-extrabold">{t("call.declined_msg")}</p>
           <button
             onClick={() => router.push("/discover")}
-            className="mt-6 rounded-full bg-accent px-8 py-3.5 font-extrabold text-white"
+            className="mt-6 rounded-full bg-accent px-8 py-3.5 font-extrabold text-[#1a1208]"
           >
             {t("common.back")}
           </button>
@@ -387,7 +387,7 @@ export default function CallPage({
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={() => void next()}
-              className="inline-flex items-center gap-2 rounded-full bg-accent px-8 py-3.5 font-extrabold text-white transition-transform hover:scale-[1.03] active:scale-95"
+              className="inline-flex items-center gap-2 rounded-full bg-accent px-8 py-3.5 font-extrabold text-[#1a1208] transition-transform hover:scale-[1.03] active:scale-95"
             >
               <FastForward size={20} weight="fill" />
               {t("match.next")}

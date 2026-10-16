@@ -51,6 +51,7 @@ export default function SettingsPage() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -65,10 +66,18 @@ export default function SettingsPage() {
   const uploadAvatar = async (file: File) => {
     const sb = getSupabase();
     if (!sb || !user) return;
-    if (!file.type.startsWith("image/") || file.size > 2 * 1024 * 1024) return;
+    setAvatarError("");
+    if (!file.type.startsWith("image/")) {
+      setAvatarError("File harus gambar.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarError("Ukuran maksimal 2MB.");
+      return;
+    }
     setUploading(true);
     try {
-      const path = `${user.id}.jpg`;
+      const path = `${user.id}/avatar.jpg`;
       const { error: upErr } = await sb.storage
         .from("avatars")
         .upload(path, file, { upsert: true, contentType: file.type });
@@ -77,6 +86,8 @@ export default function SettingsPage() {
       setAvatarUrl(data.publicUrl);
       await sb.from("profiles").update({ avatar_url: data.publicUrl }).eq("id", user.id);
       await refresh();
+    } catch {
+      setAvatarError("Gagal mengunggah foto. Coba lagi.");
     } finally {
       setUploading(false);
     }
@@ -156,6 +167,9 @@ export default function SettingsPage() {
             <p className="text-xs font-semibold text-ink-soft">
               Foto profil — dipakai juga untuk verifikasi wajah kreator.
             </p>
+            {avatarError && (
+              <p className="text-xs font-bold text-red-400">{avatarError}</p>
+            )}
           </div>
           <div>
             <label htmlFor="name" className="mb-1.5 block text-sm font-bold">

@@ -49,13 +49,16 @@ function Photo({ c }: { c: Creator }) {
       />
     );
   }
-  // Tanpa foto: inisial elegan — bukan foto palsu.
+  // Tanpa foto: pola hangat — bukan foto palsu, bukan inisial raksasa.
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-accent/40 via-surface to-accent2/30">
-      <span className="text-6xl font-extrabold text-white/80">
-        {c.display_name.charAt(0).toUpperCase()}
-      </span>
-    </div>
+    <div
+      className="absolute inset-0 bg-surface-2"
+      style={{
+        backgroundImage:
+          "radial-gradient(circle at 30% 20%, rgba(240,160,44,0.14), transparent 55%), radial-gradient(circle at 75% 80%, rgba(240,160,44,0.08), transparent 50%)",
+      }}
+      aria-hidden
+    />
   );
 }
 
@@ -91,12 +94,12 @@ function CreatorCard({ c }: { c: Creator }) {
             <p className="truncate text-base font-extrabold tracking-tight text-white">
               {c.display_name}
             </p>
-            <p className="mt-0.5 text-xs font-bold text-accent2 tabular-nums">
+            <p className="mt-0.5 text-xs font-bold text-accent tabular-nums">
               {c.rate_tokens_per_interval} {t("discover.rate_unit")}
             </p>
           </div>
           <span
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-white shadow-lg transition-transform group-hover:scale-105"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-[#1a1208] shadow-lg transition-transform group-hover:scale-105"
             aria-hidden
           >
             <Phone size={20} weight="fill" />
@@ -144,18 +147,15 @@ export default function DiscoverPage() {
     : null;
 
   return (
-    <div className="relative mx-auto max-w-4xl">
-      <div className="relative pt-8">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-accent2">
-          {t("discover.title")}
-        </p>
-        <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
+    <div className="mx-auto max-w-4xl">
+      <div className="pt-8">
+        <h1 className="font-display text-[clamp(2.8rem,10vw,4.5rem)] leading-[0.95] tracking-wide">
           {t("discover.title")}
         </h1>
-        <p className="mt-2 max-w-[52ch] text-ink-soft">{t("discover.sub")}</p>
+        <p className="mt-3 max-w-[52ch] text-ink-soft">{t("discover.sub")}</p>
         {ordered && ordered.length > 0 && (
-          <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-accent2/10 px-3.5 py-1.5 text-sm font-bold text-accent2">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden />
+          <p className="mt-4 flex items-center gap-2 text-sm font-bold text-ink-soft">
+            <span className="h-2 w-2 rounded-full bg-leaf" aria-hidden />
             {t("discover.online_count").replace("{n}", String(onlineCount))}
           </p>
         )}

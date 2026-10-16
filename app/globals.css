@@ -1,25 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  /* SapaLive — dark modern */
-  --color-base: #0b1020;
-  --color-surface: #111a30;
-  --color-surface-2: #18223d;
+  /* SapaLive — ruang tengah malam: arang hangat + amber tungsten */
+  --color-base: #161210;
+  --color-surface: #201a15;
+  --color-surface-2: #2a231c;
 
-  --color-ink: #edf0ff;
-  --color-ink-soft: #98a2c9;
-  --color-paper: #0b1020;
-  --color-cream: #111a30;
+  --color-ink: #f3ece2;
+  --color-ink-soft: #a89a89;
+  --color-paper: #161210;
+  --color-cream: #201a15;
 
-  --color-accent: #6c7cff;
-  --color-accent-dark: #525ee0;
-  --color-accent2: #35d6c0;
-  --color-ember: #6c7cff;
-  --color-ember-dark: #525ee0;
-  --color-leaf: #35d6c0;
+  --color-accent: #f0a02c;
+  --color-accent-dark: #c77f1a;
+  --color-accent2: #f0a02c;
+  --color-ember: #f0a02c;
+  --color-ember-dark: #c77f1a;
+  --color-leaf: #7bc47f;
 
   --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui,
     -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-bebas), "Bebas Neue", "Arial Narrow", sans-serif;
 }
 
 html {

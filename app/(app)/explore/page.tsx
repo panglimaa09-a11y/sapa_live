@@ -64,7 +64,7 @@ export default function ExplorePage() {
 
         <Link
           href="/match"
-          className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent px-10 py-4 text-lg font-extrabold text-white shadow-[0_8px_40px_-8px] shadow-accent/60 transition-transform hover:-translate-y-0.5"
+          className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-accent px-10 py-4 text-lg font-extrabold text-[#1a1208] transition-transform hover:-translate-y-0.5"
         >
           <Shuffle size={22} weight="fill" aria-hidden />
           {t("explore.cta")}

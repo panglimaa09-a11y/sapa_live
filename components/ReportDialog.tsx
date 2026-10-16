@@ -118,7 +118,7 @@ export default function ReportDialog({
             <button
               onClick={() => void submit()}
               disabled={busy}
-              className="mt-4 w-full rounded-2xl bg-accent px-6 py-3.5 font-extrabold text-white disabled:opacity-60"
+              className="mt-4 w-full rounded-2xl bg-accent px-6 py-3.5 font-extrabold text-[#1a1208] disabled:opacity-60"
             >
               {busy ? t("common.loading") : t("report.submit")}
             </button>

@@ -9,7 +9,7 @@ export default function Navbar() {
   return (
     <header className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-4 sm:px-6">
       <Link href="/" className="flex items-center gap-2" aria-label="SapaLive">
-        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-white">
+        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-[#1a1208]">
           <VideoCamera size={22} weight="fill" aria-hidden />
         </span>
         <span className="text-2xl font-extrabold tracking-tight">
@@ -36,7 +36,7 @@ export default function Navbar() {
         </Link>
         <Link
           href="/register"
-          className="rounded-full bg-accent px-6 py-3 text-[15px] font-bold text-white transition-transform hover:-translate-y-0.5"
+          className="rounded-2xl bg-accent px-6 py-3 text-[15px] font-bold text-[#1a1208] transition-transform hover:-translate-y-0.5"
         >
           {t("landing.cta_start")}
         </Link>

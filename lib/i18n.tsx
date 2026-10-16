@@ -29,9 +29,9 @@ const id: Dict = {
   "nav.tokens": "Token",
 
   "landing.badge": "Platform sosial real-time",
-  "landing.hero_title": "Kenalan baru, sekali klik.",
+  "landing.hero_title": "Malam ini ngobrol sama siapa?",
   "landing.hero_sub":
-    "SapaLive mempertemukanmu lewat video call 1 lawan 1 dengan orang baru. Acak, instan, dan aman — khusus 18+.",
+    "SapaLive nyambungin kamu ke orang baru lewat video call. Acak, langsung, tanpa basa-basi — khusus 18+.",
   "landing.cta_start": "Mulai Ngobrol",
   "landing.cta_how": "Cara kerja",
   "landing.live_now": "online sekarang",

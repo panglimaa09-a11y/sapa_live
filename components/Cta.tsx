@@ -20,7 +20,7 @@ export default function Cta() {
           </p>
           <Link
             href="/register"
-            className="mt-9 inline-flex items-center gap-2 rounded-full bg-accent px-10 py-4 text-lg font-bold text-white transition-transform hover:-translate-y-0.5"
+            className="mt-9 inline-flex items-center gap-2 rounded-2xl bg-accent px-10 py-4 text-lg font-bold text-[#1a1208] transition-transform hover:-translate-y-0.5"
           >
             {t("landing.cta_start")}
             <ArrowRight size={22} weight="bold" aria-hidden />

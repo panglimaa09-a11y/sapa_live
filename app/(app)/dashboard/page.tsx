@@ -80,45 +80,42 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="relative">
-      {/* Ambient glow */}
-      <div className="pointer-events-none absolute -top-10 left-1/2 h-72 w-[42rem] max-w-full -translate-x-1/2 rounded-full bg-accent/15 blur-3xl" aria-hidden />
-
-      <section className="relative pt-10 text-center sm:pt-14">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-accent2">
+    <div className="mx-auto max-w-4xl">
+      <section className="pt-10">
+        <p className="text-sm font-semibold text-ink-soft">
           {greeting}
           {name ? `, ${name}` : ""}
         </p>
-        <h1 className="mx-auto mt-3 max-w-2xl text-4xl font-extrabold tracking-tighter sm:text-5xl">
+        <h1 className="mt-2 font-display text-[clamp(2.8rem,10vw,4.5rem)] leading-[0.95] tracking-wide">
           {t("dashboard.title")}
         </h1>
-        <p className="mx-auto mt-3 max-w-[46ch] text-ink-soft">{t("dashboard.sub")}</p>
+        <p className="mt-3 max-w-[46ch] text-ink-soft">{t("dashboard.sub")}</p>
         <Link
           href="/match"
-          className="group mt-8 inline-flex items-center gap-3 rounded-full bg-accent px-10 py-4 text-lg font-extrabold text-white shadow-[0_8px_40px_-8px] shadow-accent/60 transition-transform hover:-translate-y-0.5"
+          className="group mt-8 inline-flex items-center gap-3 rounded-2xl bg-accent px-9 py-4 text-lg font-extrabold text-[#1a1208] transition-transform hover:-translate-y-0.5"
         >
           {t("dashboard.quick_match")}
           <ArrowRight size={22} weight="bold" aria-hidden className="transition-transform group-hover:translate-x-1" />
         </Link>
         {demo && (
-          <p className="mx-auto mt-4 max-w-[52ch] text-xs leading-relaxed text-amber-200/80">
+          <p className="mt-4 max-w-[52ch] text-xs leading-relaxed text-amber-200/80">
             {t("demo.note")}
           </p>
         )}
       </section>
 
-      <section className="relative mt-12" aria-label={t("dashboard.stats_label")}>
+      <section className="mt-12" aria-label={t("dashboard.stats_label")}>
         <div className="grid grid-cols-3 gap-3 sm:gap-4">
           {statCards.map((s) => (
             <div
               key={s.label}
-              className="rounded-3xl border border-white/10 bg-surface p-4 text-center sm:p-6"
+              className="rounded-3xl border border-white/10 bg-surface p-4 sm:p-6"
             >
-              <s.icon size={22} weight="duotone" aria-hidden className="mx-auto text-accent" />
+              <s.icon size={22} weight="duotone" aria-hidden className="text-accent" />
               <p className="mt-2 text-3xl font-extrabold tracking-tight tabular-nums sm:text-4xl">
                 {loading ? "–" : s.value}
               </p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-wider text-ink-soft sm:text-sm sm:normal-case sm:tracking-normal sm:font-semibold">
+              <p className="mt-1 text-xs font-semibold text-ink-soft sm:text-sm">
                 {s.label}
               </p>
             </div>
@@ -126,8 +123,8 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section className="relative mt-10" aria-label={t("dashboard.quick_links")}>
-        <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">{t("dashboard.quick_links")}</h2>
+      <section className="mt-10" aria-label={t("dashboard.quick_links")}>
+        <h2 className="font-display text-3xl tracking-wide">{t("dashboard.quick_links")}</h2>
         <div className="mt-4 grid grid-cols-3 gap-3 sm:gap-4">
           {[
             { href: "/explore", label: t("nav.explore"), icon: Compass },
@@ -137,7 +134,7 @@ export default function DashboardPage() {
             <Link
               key={l.href}
               href={l.href}
-              className="flex flex-col items-center gap-2 rounded-3xl border border-white/10 bg-surface p-5 text-center transition-colors hover:border-accent/50"
+              className="flex flex-col items-start gap-3 rounded-3xl border border-white/10 bg-surface p-5 transition-colors hover:border-accent/50"
             >
               <l.icon size={26} weight="duotone" aria-hidden className="text-accent" />
               <span className="text-sm font-extrabold">{l.label}</span>
@@ -147,9 +144,9 @@ export default function DashboardPage() {
       </section>
 
       {profile?.role === "FEMALE" && (
-        <section className="relative mt-6" aria-label={t("dashboard.creator_title")}>
-          <div className="flex items-center gap-4 overflow-hidden rounded-3xl border border-accent2/25 bg-gradient-to-r from-accent2/10 to-transparent p-6">
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-accent2/20 text-accent2">
+        <section className="mt-6" aria-label={t("dashboard.creator_title")}>
+          <div className="flex items-center gap-4 overflow-hidden rounded-3xl border border-accent/25 bg-surface p-6">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-accent/15 text-accent">
               <Sparkle size={28} weight="fill" aria-hidden />
             </span>
             <div className="min-w-0 flex-1">
@@ -162,7 +159,7 @@ export default function DashboardPage() {
             </div>
             <Link
               href={profile.creator_status === "ACTIVE" ? "/creator/dashboard" : "/creator/onboarding"}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-accent2 px-5 py-2.5 text-sm font-extrabold text-ink"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-2xl bg-accent px-5 py-2.5 text-sm font-extrabold text-[#1a1208]"
             >
               {profile.creator_status === "ACTIVE" ? t("dashboard.creator_cta") : t("dashboard.become_cta")}
               <ArrowRight size={16} weight="bold" aria-hidden />
@@ -171,9 +168,9 @@ export default function DashboardPage() {
         </section>
       )}
 
-      <section className="relative mt-10" aria-label={t("dashboard.recent_label")}>
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">{t("dashboard.recent")}</h2>
+      <section className="mt-10" aria-label={t("dashboard.recent_label")}>
+        <div className="flex items-baseline justify-between">
+          <h2 className="font-display text-3xl tracking-wide">{t("dashboard.recent")}</h2>
           <Link
             href="/connections"
             className="inline-flex items-center gap-1 text-sm font-bold text-accent hover:underline"
@@ -190,7 +187,7 @@ export default function DashboardPage() {
               action={
                 <Link
                   href="/match"
-                  className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-white"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-accent px-6 py-3 text-sm font-extrabold text-[#1a1208]"
                 >
                   <ChatCircleText size={18} weight="bold" aria-hidden />
                   {t("dashboard.quick_match")}

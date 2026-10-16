@@ -16,10 +16,7 @@ export default function Features() {
   ];
   return (
     <section id="fitur" className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
-      <p className="mb-4 text-xs font-bold uppercase tracking-[0.22em] text-accent2">
-        {t("landing.feat_kicker")}
-      </p>
-      <h2 className="max-w-2xl text-4xl font-extrabold tracking-tighter sm:text-5xl">
+      <h2 className="max-w-2xl font-display text-5xl tracking-wide sm:text-6xl">
         {t("landing.feat_title")}
       </h2>
 
@@ -32,7 +29,7 @@ export default function Features() {
             }`}
           >
             <div className="lg:col-span-2">
-              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent text-white">
+              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/15 text-accent">
                 <f.icon size={30} weight="duotone" aria-hidden />
               </span>
             </div>

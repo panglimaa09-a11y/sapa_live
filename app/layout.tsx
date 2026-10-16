@@ -1,6 +1,6 @@
 // avoid-ai-design-ignore-file: T1 (PRD mandates Inter)
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "../lib/i18n";
 import SwRegister from "../components/SwRegister";
@@ -9,6 +9,13 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const bebas = Bebas_Neue({
+  subsets: ["latin"],
+  variable: "--font-bebas",
+  weight: ["400"],
   display: "swap",
 });
 
@@ -54,7 +61,7 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body
-        className={`${inter.variable} bg-paper font-sans text-ink antialiased`}
+        className={`${inter.variable} ${bebas.variable} bg-paper font-sans text-ink antialiased`}
       >
         <LanguageProvider>
           <SwRegister />

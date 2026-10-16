@@ -16,23 +16,14 @@ export default function HowItWorks() {
   ];
   return (
     <section id="cara-kerja" className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
-      <p className="mb-4 text-xs font-bold uppercase tracking-[0.22em] text-accent2">
-        {t("landing.how_kicker")}
-      </p>
-      <h2 className="max-w-2xl text-4xl font-extrabold tracking-tighter sm:text-5xl">
+      <h2 className="max-w-2xl font-display text-5xl tracking-wide sm:text-6xl">
         {t("landing.how_title")}
       </h2>
 
       <ol className="mt-12 grid gap-10 md:grid-cols-3">
         {steps.map((s, i) => (
           <li key={s.title} className="relative">
-            <span
-              className="pointer-events-none absolute -top-7 right-0 select-none text-[96px] font-extrabold leading-none text-white/5"
-              aria-hidden
-            >
-              {i + 1}
-            </span>
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-white">
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/15 text-accent">
               <s.icon size={26} weight="duotone" aria-hidden />
             </span>
             <h3 className="mt-5 text-xl font-extrabold tracking-tight">{s.title}</h3>

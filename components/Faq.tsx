@@ -16,10 +16,7 @@ export default function Faq() {
 
   return (
     <section id="faq" className="mx-auto w-full max-w-4xl px-4 py-20 sm:px-6 lg:py-28">
-      <p className="mb-4 text-xs font-bold uppercase tracking-[0.22em] text-accent2">
-        {t("landing.faq_kicker")}
-      </p>
-      <h2 className="text-4xl font-extrabold tracking-tighter sm:text-5xl">
+      <h2 className="font-display text-5xl tracking-wide sm:text-6xl">
         {t("landing.faq_title")}
       </h2>
 
@@ -37,7 +34,7 @@ export default function Faq() {
                 <span className="text-lg font-bold tracking-tight">{f.q}</span>
                 <span
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
-                    isOpen ? "bg-accent text-white" : "bg-white/5 text-ink"
+                    isOpen ? "bg-accent text-[#1a1208]" : "bg-white/5 text-ink"
                   }`}
                 >
                   <Plus

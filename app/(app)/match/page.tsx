@@ -8,7 +8,6 @@ import { useLang } from "../../../lib/i18n";
 import { useSession } from "../../../lib/session";
 import { getSupabase, supabaseConfigured } from "../../../lib/supabase";
 import { RandomMatcher } from "../../../lib/matchmaking";
-import Radar from "../../../components/Radar";
 import {
   SupabaseLobbyTransport,
   LoopbackLobbyTransport,
@@ -199,21 +198,9 @@ export default function MatchPage() {
   }, []);
 
   return (
-    <div className="relative mx-auto max-w-3xl">
-      {/* Ambient glow */}
-      <div className="pointer-events-none absolute -top-10 left-1/2 h-80 w-[36rem] max-w-full -translate-x-1/2 rounded-full bg-accent/15 blur-3xl" aria-hidden />
-
-      <div className="relative pt-8 text-center">
-        <Radar
-          count={phase === "searching" ? waiting : null}
-          label={t("match.radar_label")}
-          searching={phase === "searching"}
-        />
-
-        <h1 className="mt-8 text-3xl font-extrabold tracking-tight sm:text-4xl">
-          {phase === "searching" ? t("match.searching") : t("match.title")}
-        </h1>
-        <p className="mx-auto mt-2 max-w-[52ch] text-ink-soft">
+    <div className="mx-auto max-w-3xl px-1">
+      <div className="pt-10">
+        <p className="text-sm font-semibold text-ink-soft">
           {phase === "searching"
             ? waiting > 0
               ? `${waiting} ${t("match.waiting_more")}`
@@ -221,8 +208,19 @@ export default function MatchPage() {
             : t("match.sub")}
         </p>
 
+        <h1 className="mt-3 font-display text-[clamp(2.8rem,10vw,4.5rem)] leading-[0.95] tracking-wide">
+          {phase === "searching" ? t("match.searching") : t("match.title")}
+        </h1>
+
+        {phase === "searching" && (
+          <div className="mt-8 flex items-center gap-4" aria-hidden>
+            <div className="h-2.5 w-2.5 animate-ping rounded-full bg-accent" />
+            <div className="h-px flex-1 bg-gradient-to-r from-accent/60 to-transparent" />
+          </div>
+        )}
+
         {rateInfo && phase === "idle" && (
-          <p className="mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent">
+          <p className="mt-5 border-l-2 border-accent/60 pl-4 text-sm font-semibold text-ink-soft">
             {t("match.rate_note")
               .replace("{rate}", String(rateInfo.rate))
               .replace("{seconds}", String(rateInfo.seconds))}
@@ -230,16 +228,16 @@ export default function MatchPage() {
         )}
 
         {!supabaseConfigured && (
-          <p className="mx-auto mt-5 max-w-[60ch] rounded-2xl border border-amber-300/20 bg-amber-300/5 px-4 py-3 text-center text-sm text-amber-200/90">
+          <p className="mt-5 rounded-2xl border border-amber-300/20 bg-amber-300/5 px-4 py-3 text-sm text-amber-200/90">
             {t("match.demo_note")}
           </p>
         )}
 
-        <div className="mt-8">
+        <div className="mt-9">
           {phase === "idle" && (
             <button
               onClick={() => void search()}
-              className="group inline-flex items-center gap-3 rounded-full bg-accent px-10 py-4 text-lg font-extrabold text-white shadow-[0_8px_40px_-8px] shadow-accent/60 transition-transform hover:-translate-y-0.5 active:translate-y-0"
+              className="group inline-flex items-center gap-3 rounded-2xl bg-accent px-9 py-4 text-lg font-extrabold text-[#1a1208] transition-transform hover:-translate-y-0.5 active:translate-y-0"
             >
               <MagnifyingGlass
                 size={24}
@@ -254,7 +252,7 @@ export default function MatchPage() {
           {phase === "searching" && (
             <button
               onClick={() => void cancelSearch()}
-              className="rounded-full border-2 border-white/15 px-8 py-3 text-sm font-bold text-ink-soft transition-colors hover:border-white/30 hover:text-ink"
+              className="rounded-2xl border border-white/15 px-8 py-3.5 text-sm font-bold text-ink-soft transition-colors hover:border-white/30 hover:text-ink"
             >
               {t("match.cancel")}
             </button>
@@ -263,13 +261,13 @@ export default function MatchPage() {
           {phase === "error" && (
             <>
               {detail && (
-                <p className="mx-auto mb-4 max-w-[52ch] rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                <p className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                   {detail}
                 </p>
               )}
               <button
                 onClick={() => void search()}
-                className="rounded-full bg-accent px-8 py-3.5 font-extrabold text-white"
+                className="rounded-2xl bg-accent px-8 py-3.5 font-extrabold text-[#1a1208]"
               >
                 {t("common.retry")}
               </button>
@@ -278,18 +276,9 @@ export default function MatchPage() {
         </div>
 
         {phase === "idle" && (
-          <div className="mx-auto mt-10 grid max-w-xl grid-cols-3 gap-3 text-center">
-            {[
-              { n: "1", label: t("match.tip_1") },
-              { n: "2", label: t("match.tip_2") },
-              { n: "3", label: t("match.tip_3") },
-            ].map((s) => (
-              <div key={s.n} className="rounded-2xl border border-white/10 bg-surface/60 px-3 py-4">
-                <p className="text-2xl font-extrabold text-accent">{s.n}</p>
-                <p className="mt-1 text-xs leading-snug text-ink-soft">{s.label}</p>
-              </div>
-            ))}
-          </div>
+          <p className="mt-10 max-w-[52ch] text-sm leading-relaxed text-ink-soft">
+            {t("match.tip")}
+          </p>
         )}
       </div>
     </div>

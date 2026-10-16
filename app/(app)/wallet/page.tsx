@@ -165,7 +165,7 @@ export default function WalletPage() {
           <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-accent2/15 text-accent2">
             <Coins size={32} weight="fill" aria-hidden />
           </span>
-          <p className="mt-4 text-sm font-bold uppercase tracking-wider text-ink-soft">{t("wallet.balance")}</p>
+          <p className="mt-4 text-sm font-semibold text-ink-soft">{t("wallet.balance")}</p>
           <p className="mt-1 text-5xl font-extrabold tracking-tight tabular-nums">
             {loading ? "–" : (balance ?? 0)}
           </p>
