@@ -51,6 +51,7 @@ export default function AppNav() {
 
   const displayName = profile?.display_name ?? user?.email?.split("@")[0] ?? "—";
   const initial = displayName.charAt(0).toUpperCase();
+  const avatarUrl = profile?.avatar_url ?? null;
 
   const desktopTabs = [
     { href: "/dashboard", label: t("nav.dashboard"), icon: SquaresFour },
@@ -76,7 +77,7 @@ export default function AppNav() {
       <header className="sticky top-0 z-40 border-b border-white/10 bg-paper/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
           <Link href="/dashboard" className="flex items-center gap-2" aria-label="SapaLive">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-white">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-[#1a1208]">
               <VideoCamera size={20} weight="fill" aria-hidden />
             </span>
             <span className="text-xl font-extrabold tracking-tight">
@@ -124,11 +125,15 @@ export default function AppNav() {
             <Link
               href="/settings"
               aria-label={t("nav.settings")}
-              className={`flex h-10 w-10 items-center justify-center rounded-full bg-accent font-extrabold text-[#1a1208] transition-transform hover:scale-105 ${
+              className={`flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-accent font-extrabold text-[#1a1208] transition-transform hover:scale-105 ${
                 isActive("/settings") ? "ring-2 ring-white/40" : ""
               }`}
             >
-              {initial}
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                initial
+              )}
             </Link>
             <button
               type="button"
