@@ -45,7 +45,7 @@ export async function POST(req: Request) {
       bio,
       preferred_language: preferredLanguage,
       avatar_url: avatarUrl,
-      updated_at: new Date().toISOString(),
+      
     },
     { onConflict: "user_id" }
   );
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     .update({
       verification_status: "PENDING_REVIEW",
       creator_status: "PENDING",
-      updated_at: new Date().toISOString(),
+      
     })
     .eq("id", user.id);
   if (profileErr) return fail("DB_ERROR", 500);
