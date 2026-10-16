@@ -117,13 +117,12 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     if (!loading && !user && !demo) router.replace("/login");
   }, [loading, user, demo, router]);
 
-  if (loading) {
+  if (loading || (!user && !demo)) {
     return (
       <div className="flex min-h-[60dvh] items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/15 border-t-accent" />
       </div>
     );
   }
-  if (!user && !demo) return null;
   return <>{children}</>;
 }

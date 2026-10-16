@@ -16,7 +16,7 @@ type Dict = Record<string, string>;
 const id: Dict = {
   "brand.tagline": "Temukan Teman Baru, Mulai Percakapan.",
   "nav.explore": "Jelajahi",
-  "nav.match": "Cocokkan",
+  "nav.match": "Panggil",
   "nav.dashboard": "Dasbor",
   "nav.connections": "Koneksi",
   "nav.messages": "Pesan",
@@ -83,7 +83,13 @@ const id: Dict = {
   "auth.email": "Email",
   "auth.password": "Kata sandi",
   "auth.birth_date": "Tanggal lahir",
-  "auth.age_confirm": "Saya menyatakan berusia 18 tahun atau lebih.",
+  "auth.age_confirm": "Saya menyatakan berusia 18 tahun atau lebih dan menyetujui",
+  "auth.forgot": "Lupa kata sandi?",
+  "auth.terms_link": "Syarat & Ketentuan",
+  "auth.reset_sent": "Tautan reset dikirim ke emailmu. Cek kotak masuk (dan spam).",
+  "auth.reset_need_email": "Isi email dulu, lalu tekan Lupa kata sandi.",
+  "auth.and": "serta",
+  "auth.privacy_link": "Kebijakan Privasi",
   "auth.have_account": "Sudah punya akun?",
   "auth.no_account": "Belum punya akun?",
   "auth.continue_google": "Lanjutkan dengan Google",
@@ -97,6 +103,27 @@ const id: Dict = {
     "Satu langkah lagi — kami perlu memastikan usiamu 18+.",
 
   "match.title": "Cocokkan",
+
+  "call.title": "Panggil",
+  "call.sub": "Telepon kreator wanita — pilih yang online atau acak.",
+  "call.online_title": "Pilih yang Online",
+  "call.online_desc": "Lihat daftar kreator yang sedang online dan telepon langsung.",
+  "call.random_title": "Acak",
+  "call.random_desc": "Sistem mencarikan kreator online secara acak untukmu.",
+  "call.picking": "Mencarikan kreator online…",
+  "call.waiting": "Menunggu {name} menjawab…",
+  "call.waiting_sub": "Dia akan menerima notifikasi panggilan.",
+  "call.cancel": "Batal",
+  "call.accepted": "Disambungkan…",
+  "call.declined": "Panggilan ditolak. Coba kreator lain.",
+  "call.expired": "Panggilan kedaluwarsa. Coba lagi.",
+  "call.empty": "Belum ada kreator yang online. Coba lagi nanti.",
+  "call.insufficient": "Saldo tidak cukup. Butuh {required} token (saldo: {balance}).",
+  "call.retry_random": "Acak Lagi",
+  "call.female_sub": "Mode kreator",
+  "call.female_title": "Terima Panggilan",
+  "call.female_desc": "Pastikan statusmu online agar panggilan bisa masuk. Panggilan masuk tampil di dasbor kreatormu — terima atau tolak dari sana.",
+  "call.female_cta": "Buka Dasbor Kreator",
   "match.sub":
     "Ngobrol video acak dengan orang baru — klik Mulai, ketemu pasangan, bosan tinggal klik Berikutnya.",
   "match.start": "Mulai Ngobrol Acak",
@@ -365,7 +392,7 @@ const id: Dict = {
 const en: Dict = {
   "brand.tagline": "Meet New People, Start Conversations.",
   "nav.explore": "Explore",
-  "nav.match": "Match",
+  "nav.match": "Call",
   "nav.dashboard": "Dashboard",
   "nav.connections": "Connections",
   "nav.messages": "Messages",
@@ -431,7 +458,13 @@ const en: Dict = {
   "auth.email": "Email",
   "auth.password": "Password",
   "auth.birth_date": "Date of birth",
-  "auth.age_confirm": "I confirm I am 18 years or older.",
+  "auth.age_confirm": "I confirm I am 18 years or older and agree to the",
+  "auth.forgot": "Forgot password?",
+  "auth.terms_link": "Terms & Conditions",
+  "auth.reset_sent": "Reset link sent to your email. Check inbox (and spam).",
+  "auth.reset_need_email": "Enter your email first, then tap Forgot password.",
+  "auth.and": "and",
+  "auth.privacy_link": "Privacy Policy",
   "auth.have_account": "Already have an account?",
   "auth.no_account": "Don't have an account?",
   "auth.continue_google": "Continue with Google",
@@ -444,6 +477,27 @@ const en: Dict = {
   "auth.complete_sub": "One more step — we need to verify you're 18+.",
 
   "match.title": "Match",
+
+  "call.title": "Call",
+  "call.sub": "Call a female creator — pick who's online or go random.",
+  "call.online_title": "Choose Who's Online",
+  "call.online_desc": "Browse creators who are online now and call directly.",
+  "call.random_title": "Random",
+  "call.random_desc": "Get connected to a random online creator.",
+  "call.picking": "Finding an online creator…",
+  "call.waiting": "Waiting for {name} to answer…",
+  "call.waiting_sub": "She'll receive a call notification.",
+  "call.cancel": "Cancel",
+  "call.accepted": "Connecting…",
+  "call.declined": "Call declined. Try another creator.",
+  "call.expired": "Call expired. Try again.",
+  "call.empty": "No creators online right now. Try again later.",
+  "call.insufficient": "Insufficient balance. Need {required} tokens (balance: {balance}).",
+  "call.retry_random": "Try Random Again",
+  "call.female_sub": "Creator mode",
+  "call.female_title": "Receive Calls",
+  "call.female_desc": "Stay online so calls can reach you. Incoming calls appear on your creator dashboard — accept or decline from there.",
+  "call.female_cta": "Open Creator Dashboard",
   "match.sub":
     "Random video chats with new people — hit Start, meet someone, hit Next when bored.",
   "match.start": "Start Random Chat",
@@ -749,4 +803,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
 export function useLang() {
   return useContext(Ctx);
+}
+
+/** Judul tab per halaman — dipanggil dari client component. */
+export function usePageTitle(title: string) {
+  const { lang } = useLang();
+  useEffect(() => {
+    document.title = `${title} — SapaLive`;
+  }, [title, lang]);
 }

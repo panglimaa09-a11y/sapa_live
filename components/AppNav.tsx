@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   VideoCamera,
   SquaresFour,
-  Shuffle,
+  Phone,
   Compass,
   ChatCircleText,
   Users,
@@ -56,7 +56,7 @@ export default function AppNav() {
   const desktopTabs = [
     { href: "/dashboard", label: t("nav.dashboard"), icon: SquaresFour },
     { href: "/discover", label: t("nav.discover"), icon: Sparkle },
-    { href: "/match", label: t("nav.match"), icon: Shuffle },
+    { href: "/match", label: t("nav.match"), icon: Phone },
     { href: "/explore", label: t("nav.explore"), icon: Compass },
     { href: "/messages", label: t("nav.messages"), icon: ChatCircleText },
     { href: "/connections", label: t("nav.connections"), icon: Users },
@@ -65,7 +65,7 @@ export default function AppNav() {
   const mobileTabs = [
     { href: "/dashboard", label: t("nav.dashboard"), icon: SquaresFour },
     { href: "/discover", label: t("nav.discover"), icon: Sparkle },
-    { href: "/match", label: t("nav.match"), icon: Shuffle },
+    { href: "/match", label: t("nav.match"), icon: Phone },
     { href: "/messages", label: t("nav.messages"), icon: ChatCircleText },
     { href: "/wallet", label: t("nav.wallet"), icon: Wallet },
   ];

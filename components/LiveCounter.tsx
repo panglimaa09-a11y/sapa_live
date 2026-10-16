@@ -4,9 +4,14 @@ import { useEffect, useState } from "react";
 import { getSupabase } from "../lib/supabase";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { PresenceMeta } from "../lib/matchmaking";
+import { useLang } from "../lib/i18n";
 
-/** Jumlah orang dalam antrean matchmaking — DATA NYATA via presence. */
+/**
+ * Indikator live di hero — DATA NYATA via presence.
+ * Disembunyikan saat 0 agar tidak memberi kesan layanan sepi.
+ */
 export default function LiveCounter() {
+  const { t } = useLang();
   const [online, setOnline] = useState<number | null>(null);
 
   useEffect(() => {
@@ -36,6 +41,17 @@ export default function LiveCounter() {
     };
   }, []);
 
-  if (online === null) return <span className="tabular-nums">—</span>;
-  return <span className="tabular-nums">{online.toLocaleString("id-ID")}</span>;
+  if (online === null || online === 0) return null;
+  return (
+    <p className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+      <span className="relative flex h-2 w-2">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-leaf opacity-70" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-leaf" />
+      </span>
+      <strong className="font-bold text-ink tabular-nums">
+        <span className="tabular-nums">{online.toLocaleString("id-ID")}</span>
+      </strong>
+      {t("landing.live_now")}
+    </p>
+  );
 }

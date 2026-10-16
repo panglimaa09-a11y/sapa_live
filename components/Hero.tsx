@@ -16,16 +16,7 @@ export default function Hero() {
       />
       <div className="relative mx-auto w-full max-w-7xl px-5 pb-16 pt-12 sm:px-8 lg:pt-20">
         <div className="max-w-3xl">
-          <p className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-leaf opacity-70" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-leaf" />
-            </span>
-            <strong className="font-bold text-ink tabular-nums">
-              <LiveCounter />
-            </strong>
-            {t("landing.live_now")}
-          </p>
+          <LiveCounter />
 
           <h1 className="mt-6 font-display text-[clamp(3rem,10vw,6rem)] font-semibold leading-[1.02] tracking-tight text-ink">
             {t("landing.hero_title_a")}{" "}
