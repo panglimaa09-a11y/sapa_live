@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Phone } from "@phosphor-icons/react";
-import { useLang } from "../../../lib/i18n";
+import { useLang, usePageTitle } from "../../../lib/i18n";
 import EmptyState from "../../../components/EmptyState";
 
 interface Creator {
@@ -98,20 +98,24 @@ function CreatorCard({ c }: { c: Creator }) {
               {c.rate_tokens_per_interval} {t("discover.rate_unit")}
             </p>
           </div>
-          <span
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-[#1a1208] shadow-lg transition-transform group-hover:scale-105"
-            aria-hidden
-          >
-            <Phone size={20} weight="fill" />
-          </span>
         </div>
       </Link>
+      {st === "online" && (
+        <Link
+          href={`/creator/${c.user_id}?call=1`}
+          aria-label={`${t("call.title")} ${c.display_name}`}
+          className="absolute bottom-3.5 right-3.5 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-[#1a1208] shadow-lg transition-transform hover:scale-105"
+        >
+          <Phone size={20} weight="fill" aria-hidden />
+        </Link>
+      )}
     </li>
   );
 }
 
 export default function DiscoverPage() {
   const { t } = useLang();
+  usePageTitle(t("nav.discover"));
   const [creators, setCreators] = useState<Creator[] | null>(null);
   const [failed, setFailed] = useState(false);
 

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Coins, PhoneCall, Clock, PhoneDisconnect } from "@phosphor-icons/react";
-import { useLang } from "../../../../lib/i18n";
+import { useLang, usePageTitle } from "../../../../lib/i18n";
 import { useSession } from "../../../../lib/session";
 import { getSupabase } from "../../../../lib/supabase";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -28,6 +28,7 @@ function netOf(e: Record<string, unknown>): number {
 
 export default function CreatorDashboardPage() {
   const { t } = useLang();
+  usePageTitle(t("call.female_title"));
   const { user, profile, refresh } = useSession();
   const router = useRouter();
 

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Shuffle } from "@phosphor-icons/react";
 import Radar from "../../../components/Radar";
-import { useLang } from "../../../lib/i18n";
+import { useLang, usePageTitle } from "../../../lib/i18n";
 import { getSupabase, supabaseConfigured } from "../../../lib/supabase";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { PresenceMeta } from "../../../lib/matchmaking";
@@ -13,6 +13,7 @@ import type { PresenceMeta } from "../../../lib/matchmaking";
 /** Jelajahi: data nyata — jumlah orang dalam antrean live via presence. */
 export default function ExplorePage() {
   const { t } = useLang();
+  usePageTitle(t("nav.explore"));
   const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {

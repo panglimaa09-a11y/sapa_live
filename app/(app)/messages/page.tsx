@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { PaperPlaneTilt, ArrowLeft } from "@phosphor-icons/react";
-import { useLang } from "../../../lib/i18n";
+import { useLang, usePageTitle } from "../../../lib/i18n";
 import { useSession } from "../../../lib/session";
 import { getSupabase } from "../../../lib/supabase";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -24,6 +24,7 @@ interface Msg {
 
 export default function MessagesPage() {
   const { t } = useLang();
+  usePageTitle(t("nav.messages"));
   const { user } = useSession();
   const searchParams = useSearchParams();
   const [threads, setThreads] = useState<Thread[]>([]);

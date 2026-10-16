@@ -1,9 +1,9 @@
 // avoid-ai-design-ignore-file: L1 (centered profile app screen, deliberate)
 "use client";
 
-import { use, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Flag, Prohibit, ShieldCheck, VideoCamera } from "@phosphor-icons/react";
 import { useLang } from "../../../../lib/i18n";
 import { useSession } from "../../../../lib/session";
@@ -42,10 +42,30 @@ export default function CreatorDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-2xl py-16 text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-white/15 border-t-accent" />
+        </div>
+      }
+    >
+      <CreatorDetailInner params={params} />
+    </Suspense>
+  );
+}
+
+function CreatorDetailInner({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const { t } = useLang();
   const { user } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const autoCalled = useRef(false);
 
   const [creator, setCreator] = useState<Creator | null | undefined>(undefined);
   const [balance, setBalance] = useState<number | null>(null);
@@ -78,6 +98,20 @@ export default function CreatorDetailPage({
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Dari tombol telepon di kartu kreator: langsung buka konfirmasi panggilan.
+  useEffect(() => {
+    if (
+      !autoCalled.current &&
+      searchParams.get("call") === "1" &&
+      creator &&
+      creator.is_available &&
+      !blocked
+    ) {
+      autoCalled.current = true;
+      setPhase("confirm");
+    }
+  }, [searchParams, creator, blocked]);
 
   const startPolling = (callId: string) => {
     stopPoll();

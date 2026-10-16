@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Coins, Clock, ChatCircleText, VideoCamera, Compass, Users, Wallet, Sparkle } from "@phosphor-icons/react";
-import { useLang } from "../../../lib/i18n";
+import { useLang, usePageTitle } from "../../../lib/i18n";
 import { useSession } from "../../../lib/session";
 import { getSupabase } from "../../../lib/supabase";
 import EmptyState from "../../../components/EmptyState";
@@ -13,6 +13,7 @@ type Recent = { id: string; displayName: string; endedAt: string | null };
 
 export default function DashboardPage() {
   const { t } = useLang();
+  usePageTitle(t("nav.dashboard"));
   const { user, profile, demo } = useSession();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ conversations: 0, minutes: 0, tokens: 0 });
