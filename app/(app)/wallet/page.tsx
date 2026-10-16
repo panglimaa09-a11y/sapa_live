@@ -45,6 +45,7 @@ export default function WalletPage() {
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [withdrawMsg, setWithdrawMsg] = useState("");
   const [withdrawBusy, setWithdrawBusy] = useState(false);
+  const [buyError, setBuyError] = useState("");
   const poll = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadAll = useCallback(async () => {
@@ -120,6 +121,7 @@ export default function WalletPage() {
 
   const buy = async (pkg: Pkg) => {
     setBuying(pkg.id);
+    setBuyError("");
     try {
       const res = await fetch("/api/topup/create", {
         method: "POST",
@@ -131,6 +133,13 @@ export default function WalletPage() {
         window.location.href = String(json.payment_link);
         return;
       }
+      setBuyError(
+        json?.error === "TOPUP_UNCONFIGURED"
+          ? t("wallet.unavailable")
+          : t("common.error")
+      );
+    } catch {
+      setBuyError(t("common.error"));
     } finally {
       setBuying(null);
     }
@@ -248,6 +257,11 @@ export default function WalletPage() {
         <section className="mt-10" aria-label={t("wallet.topup")}>
           <h2 className="text-xl font-extrabold tracking-tight">{t("wallet.topup")}</h2>
           <p className="mt-1 text-xs text-ink-soft">{t("wallet.packages_note")}</p>
+          {buyError && (
+            <p className="mt-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-bold text-red-300">
+              {buyError}
+            </p>
+          )}
           <div className="mt-4">
             {packages === null && <p className="text-sm text-ink-soft">{t("common.loading")}</p>}
             {packages !== null && packages.length === 0 && (

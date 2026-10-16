@@ -10,12 +10,16 @@ export const BILLING = {
   platformFeePct: 0,
 } as const;
 
-// HARGA CONTOH — Tuan yang tentukan sebelum produksi.
-// Jangan tampilkan ke publik sebagai harga final sebelum disetujui.
+// HARGA RESMI — disetujui Tuan 16 Okt 2026, mengikuti paket ayar.chat.
+// Jangan ubah tanpa persetujuan Tuan.
 export const TOPUP_PACKAGES = [
-  { id: "starter", tokens: 50, idr: 15000 },
-  { id: "plus", tokens: 120, idr: 30000 },
-  { id: "max", tokens: 300, idr: 75000 },
+  { id: "p160", tokens: 160, idr: 28000 },
+  { id: "p240", tokens: 240, idr: 41000 },
+  { id: "p530", tokens: 530, idr: 83000 },
+  { id: "p880", tokens: 880, idr: 137000 },
+  { id: "p1800", tokens: 1800, idr: 274000 },
+  { id: "p4600", tokens: 4600, idr: 685000 },
+  { id: "p10000", tokens: 10000, idr: 1370000 },
 ] as const;
 
 export type TopupPackage = (typeof TOPUP_PACKAGES)[number];

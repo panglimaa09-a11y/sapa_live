@@ -44,6 +44,14 @@ export const metadata: Metadata = {
     siteName: "SapaLive",
     locale: "id_ID",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "SapaLive — Temukan Teman Baru, Mulai Percakapan",
+      },
+    ],
   },
 };
 
