@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  /* SapaLive Admin — dark modern (selaras brand utama) */
+  --color-base: #0b1020;
+  --color-surface: #111a30;
+  --color-surface-2: #18223d;
+
+  --color-ink: #edf0ff;
+  --color-ink-soft: #98a2c9;
+  --color-paper: #0b1020;
+
+  --color-accent: #6c7cff;
+  --color-accent-dark: #525ee0;
+  --color-accent2: #35d6c0;
+
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", sans-serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
