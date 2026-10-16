@@ -11,29 +11,39 @@ import { supabaseConfigured } from "./supabase";
 
 /**
  * Manajer panggilan WebRTC 1v1.
- * STUN publik gratis; untuk produksi di balik NAT simetris, tambahkan TURN
- * via env: NEXT_PUBLIC_TURN_URLS (koma-pisah), NEXT_PUBLIC_TURN_USERNAME,
- * NEXT_PUBLIC_TURN_CREDENTIAL.
- * Contoh gratis: Metered (metered.ca, free tier) atau ExpressTURN.
+ * STUN publik gratis sebagai fallback. TURN diambil dinamis dari Metered
+ * (via NEXT_PUBLIC_METERED_APP + NEXT_PUBLIC_METERED_KEY) — kredensial
+ * TURN bersifat sementara sehingga di-fetch saat panggilan dimulai.
+ * Tanpa env Metered: hanya STUN (cukup untuk awal, gagal di NAT simetris).
  */
-function buildIceServers(): RTCIceServer[] {
-  const servers: RTCIceServer[] = [
-    { urls: "stun:stun.l.google.com:19302" },
-  ];
-  const turnUrls = (process.env.NEXT_PUBLIC_TURN_URLS ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const username = process.env.NEXT_PUBLIC_TURN_USERNAME ?? "";
-  const credential = process.env.NEXT_PUBLIC_TURN_CREDENTIAL ?? "";
-  if (turnUrls.length > 0) {
-    servers.push({ urls: turnUrls, username, credential });
+const FALLBACK_ICE: RTCIceServer[] = [
+  { urls: "stun:stun.l.google.com:19302" },
+];
+
+/** Ambil iceServers lengkap (STUN + TURN Metered bila dikonfigurasi). */
+export async function getIceServers(): Promise<RTCIceServer[]> {
+  const app = process.env.NEXT_PUBLIC_METERED_APP ?? "";
+  const key = process.env.NEXT_PUBLIC_METERED_KEY ?? "";
+  if (!app || !key) return FALLBACK_ICE;
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    const res = await fetch(
+      `https://${app}.metered.live/api/v1/turn/credentials?apiKey=${key}`,
+      { signal: ctrl.signal }
+    );
+    clearTimeout(t);
+    if (!res.ok) return FALLBACK_ICE;
+    const servers = (await res.json()) as RTCIceServer[];
+    if (!Array.isArray(servers) || servers.length === 0) return FALLBACK_ICE;
+    return servers;
+  } catch {
+    return FALLBACK_ICE;
   }
-  return servers;
 }
 
 export const RTC_CONFIG: RTCConfiguration = {
-  iceServers: buildIceServers(),
+  iceServers: FALLBACK_ICE,
 };
 
 export type CallState =
@@ -113,7 +123,7 @@ export class CallManager {
       : new LoopbackSignaling();
     await this.signaling.connect(this.roomId, (m) => this.handleSignal(m));
 
-    this.pc = new RTCPeerConnection(RTC_CONFIG);
+    this.pc = new RTCPeerConnection({ iceServers: await getIceServers() });
     this.stream?.getTracks().forEach((t) => this.pc!.addTrack(t, this.stream!));
     this.pc.ontrack = (ev) => this.onRemoteStream(ev.streams[0] ?? null);
     this.pc.onicecandidate = (ev) => {
