@@ -12,10 +12,28 @@ import { supabaseConfigured } from "./supabase";
 /**
  * Manajer panggilan WebRTC 1v1.
  * STUN publik gratis; untuk produksi di balik NAT simetris, tambahkan TURN
- * di RTC_CONFIG (lihat .env.example).
+ * via env: NEXT_PUBLIC_TURN_URLS (koma-pisah), NEXT_PUBLIC_TURN_USERNAME,
+ * NEXT_PUBLIC_TURN_CREDENTIAL.
+ * Contoh gratis: Metered (metered.ca, free tier) atau ExpressTURN.
  */
+function buildIceServers(): RTCIceServer[] {
+  const servers: RTCIceServer[] = [
+    { urls: "stun:stun.l.google.com:19302" },
+  ];
+  const turnUrls = (process.env.NEXT_PUBLIC_TURN_URLS ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const username = process.env.NEXT_PUBLIC_TURN_USERNAME ?? "";
+  const credential = process.env.NEXT_PUBLIC_TURN_CREDENTIAL ?? "";
+  if (turnUrls.length > 0) {
+    servers.push({ urls: turnUrls, username, credential });
+  }
+  return servers;
+}
+
 export const RTC_CONFIG: RTCConfiguration = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  iceServers: buildIceServers(),
 };
 
 export type CallState =
