@@ -4,7 +4,7 @@
 import { Suspense, use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Flag, Prohibit, ShieldCheck, VideoCamera } from "@phosphor-icons/react";
+import { ArrowLeft, ChatCircleText, Flag, Prohibit, ShieldCheck, VideoCamera } from "@phosphor-icons/react";
 import { useLang } from "../../../../lib/i18n";
 import { useSession } from "../../../../lib/session";
 import { getSupabase } from "../../../../lib/supabase";
@@ -19,6 +19,7 @@ interface Creator {
   preferred_language: string | null;
   rate_tokens_per_interval: number;
   is_available: boolean;
+  face_verified: boolean;
 }
 
 type ReqPhase = "idle" | "confirm" | "waiting" | "accepted" | "declined" | "expired" | "insufficient" | "failed";
@@ -100,12 +101,14 @@ function CreatorDetailInner({
   }, [load]);
 
   // Dari tombol telepon di kartu kreator: langsung buka konfirmasi panggilan.
+  // Hanya jika sudah verifikasi wajah (aturan Tuan).
   useEffect(() => {
     if (
       !autoCalled.current &&
       searchParams.get("call") === "1" &&
       creator &&
       creator.is_available &&
+      creator.face_verified &&
       !blocked
     ) {
       autoCalled.current = true;
@@ -166,6 +169,20 @@ function CreatorDetailInner({
   const cancelWaiting = () => {
     stopPoll();
     setPhase("idle");
+  };
+
+  const startChat = async () => {
+    try {
+      const { json } = await api("/api/chats/start", {
+        method: "POST",
+        body: JSON.stringify({ user_id: id }),
+      });
+      if (json?.ok && typeof json.match_id === "string") {
+        router.push(`/messages?m=${json.match_id as string}`);
+      }
+    } catch {
+      /* abaikan */
+    }
   };
 
   const blockCreator = async () => {
@@ -265,7 +282,7 @@ function CreatorDetailInner({
           </dl>
 
           <div className="space-y-3 px-6 pb-6">
-            {phase === "idle" && (
+            {phase === "idle" && creator.face_verified && (
               <button
                 onClick={() => setPhase("confirm")}
                 disabled={!creator.is_available || blocked}
@@ -274,6 +291,20 @@ function CreatorDetailInner({
                 <VideoCamera size={22} weight="fill" aria-hidden />
                 {t("creator.start_call")}
               </button>
+            )}
+            {phase === "idle" && !creator.face_verified && (
+              <>
+                <p className="rounded-2xl border border-white/10 bg-base px-4 py-3 text-sm text-ink-soft">
+                  {t("creator.chat_only_note")}
+                </p>
+                <button
+                  onClick={() => void startChat()}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-accent px-6 py-4 text-base font-extrabold text-white transition-transform hover:scale-[1.01]"
+                >
+                  <ChatCircleText size={22} weight="fill" aria-hidden />
+                  {t("discover.chat")}
+                </button>
+              </>
             )}
             {phase === "confirm" && (
               <div className="rounded-2xl border border-white/10 bg-base p-5" role="dialog" aria-label={t("creator.confirm_title")}>

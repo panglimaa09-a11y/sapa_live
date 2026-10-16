@@ -19,6 +19,7 @@ type Phase =
   | "expired"
   | "insufficient"
   | "empty"
+  | "not_verified"
   | "failed";
 
 interface Creator {
@@ -26,6 +27,7 @@ interface Creator {
   display_name: string;
   is_available: boolean;
   in_call: boolean;
+  face_verified: boolean;
 }
 
 async function api(path: string, init?: RequestInit) {
@@ -84,8 +86,13 @@ export default function CallPage() {
     try {
       const { json } = await api("/api/discover");
       const list = (json?.ok ? (json.creators as Creator[]) : []) ?? [];
+      // Acak: hanya yang terverifikasi wajah (boleh video call) & online.
       const online = list.filter(
-        (c) => c.is_available && !c.in_call && c.user_id !== user?.id
+        (c) =>
+          c.face_verified &&
+          c.is_available &&
+          !c.in_call &&
+          c.user_id !== user?.id
       );
       if (online.length === 0) {
         setPhase("empty");
@@ -108,6 +115,10 @@ export default function CallPage() {
           balance: Number(rj?.balance ?? 0),
         });
         setPhase("insufficient");
+        return;
+      }
+      if (rj?.error === "CREATOR_NOT_FACE_VERIFIED") {
+        setPhase("not_verified");
         return;
       }
       setPhase("failed");
@@ -217,6 +228,7 @@ export default function CallPage() {
         {(phase === "declined" ||
           phase === "expired" ||
           phase === "empty" ||
+          phase === "not_verified" ||
           phase === "failed" ||
           phase === "insufficient") && (
           <div className="mt-9">
@@ -224,6 +236,7 @@ export default function CallPage() {
               {phase === "declined" && t("call.declined")}
               {phase === "expired" && t("call.expired")}
               {phase === "empty" && t("call.empty")}
+              {phase === "not_verified" && t("call.not_verified")}
               {phase === "failed" && t("common.error")}
               {phase === "insufficient" &&
                 t("call.insufficient")

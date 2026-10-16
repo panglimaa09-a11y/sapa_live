@@ -1,5 +1,4 @@
 import { ok, fail, requireUser } from "@/lib/api-util";
-import { isEligibleCreator } from "@/lib/server";
 
 // POST /api/calls/[id]/accept — hanya female_creator_id.
 export async function POST(
@@ -25,13 +24,26 @@ export async function POST(
   if (!c || c.female_creator_id !== user.id) return fail("NOT_CREATOR", 403);
   if (c.status !== "REQUESTED") return fail("INVALID_STATE", 409);
 
-  // Re-cek kelayakan kreator saat menerima
+  // Re-cek kelayakan kreator saat menerima: harus verifikasi wajah
+  // (aturan Tuan: belum verifikasi wajah = chat aja, bukan video call)
   const { data: me } = await svc
     .from("profiles")
-    .select("role, verification_status, creator_status, account_status")
+    .select("role, account_status")
     .eq("id", user.id)
     .maybeSingle();
-  if (!isEligibleCreator(me as never)) return fail("CREATOR_INELIGIBLE", 403);
+  const m = me as { role?: string; account_status?: string } | null;
+  if (!m || m.role !== "FEMALE" || m.account_status !== "ACTIVE") {
+    return fail("CREATOR_INELIGIBLE", 403);
+  }
+  const { data: myFv } = await svc
+    .from("verification_records")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .not("face_verified_at", "is", null)
+    .limit(1);
+  if (!myFv || myFv.length === 0) {
+    return fail("CREATOR_NOT_FACE_VERIFIED", 403);
+  }
 
   const { error } = await svc
     .from("calls")

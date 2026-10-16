@@ -3,7 +3,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Phone } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
+import { Phone, ChatCircleText } from "@phosphor-icons/react";
 import { useLang, usePageTitle } from "../../../lib/i18n";
 import EmptyState from "../../../components/EmptyState";
 
@@ -16,6 +17,7 @@ interface Creator {
   rate_tokens_per_interval: number;
   is_available: boolean;
   in_call: boolean;
+  face_verified: boolean;
 }
 
 type Status = "online" | "busy" | "offline";
@@ -64,6 +66,7 @@ function Photo({ c }: { c: Creator }) {
 
 function CreatorCard({ c }: { c: Creator }) {
   const { t } = useLang();
+  const router = useRouter();
   const st = statusOf(c);
   const label =
     st === "online"
@@ -71,6 +74,24 @@ function CreatorCard({ c }: { c: Creator }) {
       : st === "busy"
         ? t("discover.in_call")
         : t("discover.offline");
+  const canCall = c.face_verified && st === "online";
+
+  const startChat = async () => {
+    try {
+      const res = await fetch("/api/chats/start", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ user_id: c.user_id }),
+      });
+      const json = await res.json().catch(() => null);
+      if (json?.ok && json.match_id) {
+        router.push(`/messages?m=${json.match_id}`);
+      }
+    } catch {
+      /* abaikan */
+    }
+  };
+
   return (
     <li className="group relative overflow-hidden rounded-3xl border border-white/10 bg-surface">
       <Link
@@ -89,6 +110,11 @@ function CreatorCard({ c }: { c: Creator }) {
           <span className={`h-1.5 w-1.5 rounded-full ${dotStyle[st]}`} aria-hidden />
           {label}
         </span>
+        {!c.face_verified && (
+          <span className="absolute right-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-bold text-white/70 backdrop-blur">
+            {t("discover.chat_only")}
+          </span>
+        )}
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-3.5">
           <div className="min-w-0">
             <p className="truncate text-base font-extrabold tracking-tight text-white">
@@ -100,15 +126,24 @@ function CreatorCard({ c }: { c: Creator }) {
           </div>
         </div>
       </Link>
-      {st === "online" && (
-        <Link
-          href={`/creator/${c.user_id}?call=1`}
-          aria-label={`${t("call.title")} ${c.display_name}`}
-          className="absolute bottom-3.5 right-3.5 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-[#1a1208] shadow-lg transition-transform hover:scale-105"
+      <div className="absolute bottom-3.5 right-3.5 flex gap-2">
+        <button
+          onClick={() => void startChat()}
+          aria-label={`${t("discover.chat")} ${c.display_name}`}
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur transition-transform hover:scale-105"
         >
-          <Phone size={20} weight="fill" aria-hidden />
-        </Link>
-      )}
+          <ChatCircleText size={20} weight="fill" aria-hidden />
+        </button>
+        {canCall && (
+          <Link
+            href={`/creator/${c.user_id}?call=1`}
+            aria-label={`${t("call.title")} ${c.display_name}`}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-[#1a1208] shadow-lg transition-transform hover:scale-105"
+          >
+            <Phone size={20} weight="fill" aria-hidden />
+          </Link>
+        )}
+      </div>
     </li>
   );
 }

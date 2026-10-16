@@ -2,7 +2,10 @@ import { headers } from "next/headers";
 import { ok, fail, requireUser, backendConfigured } from "@/lib/api-util";
 import { JARVIS_DECOYS, logHoneypotHit } from "@/lib/antibot";
 
-// Discovery kreator perempuan: HANYA yang eligible & terverifikasi.
+// Discovery wanita: diusulkan langsung seperti Ayar — SEMUA user FEMALE aktif,
+// tanpa menunggu riwayat atau verifikasi admin.
+// - face_verified=true → bisa terima panggilan video
+// - face_verified=false → hanya bisa chat
 // Tanpa Supabase = tanpa data; tidak pernah menampilkan profil dummy.
 export async function GET() {
   // Honeypot anti-scraping (perintah Tuan): scraper yang terdeteksi proxy
@@ -35,11 +38,9 @@ export async function GET() {
   let q = svc
     .from("profiles")
     .select(
-      "id, display_name, is_available, creator_profiles!inner(avatar_url, bio, preferred_language, rate_tokens_per_interval)"
+      "id, display_name, is_available, creator_profiles(avatar_url, bio, preferred_language, rate_tokens_per_interval)"
     )
     .eq("role", "FEMALE")
-    .eq("verification_status", "VERIFIED")
-    .eq("creator_status", "ACTIVE")
     .eq("account_status", "ACTIVE")
     .order("is_available", { ascending: false })
     .limit(100);
@@ -69,8 +70,34 @@ export async function GET() {
       : r.creator_profiles,
   })) as CreatorRow[];
 
-  const creators = rows
-    .filter((r) => !blocked.has(r.id) && r.creator_profiles)
+  // Tandai yang sudah verifikasi wajah (boleh terima panggilan video).
+  const ids = rows.map((r) => r.id);
+  const faceVerified = new Set<string>();
+  if (ids.length > 0) {
+    const { data: fv } = await svc
+      .from("verification_records")
+      .select("user_id")
+      .in("user_id", ids)
+      .not("face_verified_at", "is", null)
+      .limit(100);
+    for (const r of ((fv ?? []) as { user_id: string }[])) {
+      faceVerified.add(r.user_id);
+    }
+  }
+
+  type CreatorOut = {
+    user_id: string;
+    display_name: string;
+    avatar_url: string | null;
+    bio: string | null;
+    preferred_language: string;
+    rate_tokens_per_interval: number;
+    is_available: boolean;
+    in_call: boolean;
+    face_verified: boolean;
+  };
+  const creators: CreatorOut[] = rows
+    .filter((r) => !blocked.has(r.id))
     .map((r) => ({
       user_id: r.id,
       display_name: r.display_name ?? "—",
@@ -79,9 +106,16 @@ export async function GET() {
       preferred_language: r.creator_profiles?.preferred_language ?? "id",
       rate_tokens_per_interval:
         r.creator_profiles?.rate_tokens_per_interval ?? 3,
-      is_available: r.creator_profiles ? !!r.is_available : false,
+      is_available: !!r.is_available,
       in_call: false,
+      face_verified: faceVerified.has(r.id),
     }));
+  // Yang terverifikasi wajah & online di atas (bisa video call).
+  creators.sort((a, b) => {
+    const score = (c: CreatorOut) =>
+      (c.is_available ? 2 : 0) + (c.face_verified ? 1 : 0);
+    return score(b) - score(a);
+  });
 
   // Tandai yang sedang dalam panggilan (data nyata dari tabel calls).
   if (creators.length > 0) {

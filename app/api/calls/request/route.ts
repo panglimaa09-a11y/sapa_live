@@ -1,5 +1,5 @@
 import { ok, fail, readJson, requireUser } from "@/lib/api-util";
-import { isActiveUser, isEligibleCreator } from "@/lib/server";
+import { isActiveUser } from "@/lib/server";
 import { BILLING } from "@/lib/billing";
 
 // POST /api/calls/request {creator_id}
@@ -17,14 +17,31 @@ export async function POST(req: Request) {
   if (!creatorId) return fail("CREATOR_ID_REQUIRED", 400);
   if (creatorId === user.id) return fail("CANNOT_CALL_SELF", 400);
 
-  // Kelayakan kreator (data nyata dari profiles)
+  // Kelayakan dasar kreator (data nyata dari profiles)
   const { data: creator } = await svc
     .from("profiles")
     .select("id, role, verification_status, creator_status, account_status")
     .eq("id", creatorId)
     .maybeSingle();
-  if (!isEligibleCreator(creator as never)) {
+  const c = creator as {
+    id?: string;
+    role?: string;
+    account_status?: string;
+  } | null;
+  if (!c || c.role !== "FEMALE" || c.account_status !== "ACTIVE") {
     return fail("CREATOR_INELIGIBLE", 403);
+  }
+
+  // Aturan Tuan: wanita yang belum verifikasi wajah HANYA bisa chat,
+  // tidak bisa menerima panggilan video.
+  const { data: fv } = await svc
+    .from("verification_records")
+    .select("user_id")
+    .eq("user_id", creatorId)
+    .not("face_verified_at", "is", null)
+    .limit(1);
+  if (!fv || fv.length === 0) {
+    return fail("CREATOR_NOT_FACE_VERIFIED", 403);
   }
 
   // Relasi blokir dua arah
