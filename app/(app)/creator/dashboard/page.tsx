@@ -43,6 +43,7 @@ export default function CreatorDashboardPage() {
   const [incoming, setIncoming] = useState<CallRow[]>([]);
   const [responding, setResponding] = useState<string | null>(null);
   const [respondError, setRespondError] = useState("");
+  const [toggleError, setToggleError] = useState("");
   const [history, setHistory] = useState<CallRow[]>([]);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [withdrawMsg, setWithdrawMsg] = useState("");
@@ -130,6 +131,7 @@ export default function CreatorDashboardPage() {
 
   const toggleAvailability = async () => {
     setToggling(true);
+    setToggleError("");
     try {
       const res = await fetch("/api/creator/availability", {
         method: "POST",
@@ -140,7 +142,11 @@ export default function CreatorDashboardPage() {
       if (res.ok && json?.ok) {
         setIsAvailable(!isAvailable);
         await refresh();
+      } else {
+        setToggleError(t("common.error"));
       }
+    } catch {
+      setToggleError(t("common.error"));
     } finally {
       setToggling(false);
     }
@@ -224,23 +230,29 @@ export default function CreatorDashboardPage() {
       <div className="relative pt-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{t("cdash.title")}</h1>
-          <label className="flex cursor-pointer items-center gap-3 rounded-full border border-white/10 bg-surface px-5 py-3">
+          <div className="flex cursor-pointer items-center gap-3 rounded-full border border-white/10 bg-surface px-5 py-3">
             <span className="text-sm font-extrabold">{t("cdash.availability")}</span>
             <button
               type="button"
               role="switch"
               aria-checked={isAvailable}
+              aria-label={t("cdash.availability")}
               disabled={toggling}
               onClick={() => void toggleAvailability()}
-              className={`relative h-7 w-12 rounded-full transition-colors ${isAvailable ? "bg-accent2" : "bg-white/15"}`}
+              className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${isAvailable ? "bg-accent2" : "bg-white/15"}`}
             >
               <span
                 className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${isAvailable ? "left-6" : "left-1"}`}
               />
             </button>
-          </label>
+          </div>
         </div>
         <p className="mt-2 max-w-[60ch] text-xs leading-relaxed text-ink-soft">{t("cdash.availability_note")}</p>
+        {toggleError && (
+          <p className="mt-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-300">
+            {toggleError}
+          </p>
+        )}
 
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {widgets.map((w) => (
