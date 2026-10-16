@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { VideoCamera } from "@phosphor-icons/react";
 import { useLang, usePageTitle } from "../../lib/i18n";
 import { getSupabase, supabaseConfigured } from "../../lib/supabase";
@@ -12,12 +12,34 @@ const inputCls =
   "w-full rounded-2xl border-2 border-white/10 bg-base px-4 py-3.5 text-[15px] font-semibold text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none";
 
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col justify-center px-4 py-12 text-center text-ink-soft">
+          Memuat…
+        </main>
+      }
+    >
+      <LoginInner />
+    </Suspense>
+  );
+}
+
+function LoginInner() {
   const { t } = useLang();
   usePageTitle(t("auth.login_btn"));
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  // Error dari callback OAuth (mis. Google login gagal)
+  useEffect(() => {
+    if (searchParams.get("error") === "auth") {
+      setError(t("auth.oauth_failed"));
+    }
+  }, [searchParams, t]);
   const [busy, setBusy] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
