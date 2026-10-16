@@ -38,7 +38,7 @@ export async function POST(
       .update({
         verification_status: "VERIFIED",
         creator_status: "ACTIVE",
-        updated_at: now,
+        
       })
       .eq("id", id);
     if (error) return fail("DB_ERROR", 500);
@@ -57,7 +57,7 @@ export async function POST(
       .update({
         verification_status: "REJECTED",
         creator_status: "INACTIVE",
-        updated_at: now,
+        
       })
       .eq("id", id);
     if (error) return fail("DB_ERROR", 500);
@@ -73,7 +73,7 @@ export async function POST(
   } else if (action === "suspend") {
     const { error } = await svc
       .from("profiles")
-      .update({ creator_status: "SUSPENDED", updated_at: now })
+      .update({ creator_status: "SUSPENDED"})
       .eq("id", id);
     if (error) return fail("DB_ERROR", 500);
   } else {
@@ -83,7 +83,7 @@ export async function POST(
     }
     const { error } = await svc
       .from("profiles")
-      .update({ creator_status: "ACTIVE", updated_at: now })
+      .update({ creator_status: "ACTIVE"})
       .eq("id", id);
     if (error) return fail("DB_ERROR", 500);
   }
