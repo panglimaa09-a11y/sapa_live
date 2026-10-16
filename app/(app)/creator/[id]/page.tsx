@@ -149,6 +149,12 @@ function CreatorDetailInner({
         body: JSON.stringify({ creator_id: id }),
       });
       if (json?.ok && typeof json.call_id === "string") {
+        // Kreator auto-accept (available) → langsung masuk call
+        if ((json as { auto_accepted?: boolean }).auto_accepted) {
+          setPhase("accepted");
+          setTimeout(() => router.push(`/call/${json.call_id}?callId=${json.call_id}&role=caller`), 900);
+          return;
+        }
         startPolling(json.call_id as string);
         return;
       }

@@ -49,6 +49,7 @@ export default function CreatorDashboardPage() {
   const [withdrawMsg, setWithdrawMsg] = useState("");
   const [withdrawBusy, setWithdrawBusy] = useState(false);
   const chRef = useRef<RealtimeChannel | null>(null);
+  const autoJoinedRef = useRef<Set<string>>(new Set());
 
   const isCreator =
     profile?.role === "FEMALE" &&
@@ -118,8 +119,27 @@ export default function CreatorDashboardPage() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "calls", filter: `female_creator_id=eq.${user.id}` },
-        () => {
-          void load();
+        async () => {
+          await load();
+          // Auto-join: panggilan yang otomatis diterima (kreator available)
+          // langsung bawa ke halaman call tanpa klik manual.
+          const sb2 = getSupabase();
+          if (!sb2 || !user) return;
+          const { data } = await sb2
+            .from("calls")
+            .select("id, accepted_at")
+            .eq("female_creator_id", user.id)
+            .eq("status", "ACCEPTED")
+            .order("accepted_at", { ascending: false })
+            .limit(1);
+          const latest = (data as { id: string; accepted_at: string }[] | null)?.[0];
+          if (latest && !autoJoinedRef.current.has(latest.id)) {
+            const age = Date.now() - new Date(latest.accepted_at).getTime();
+            if (age < 60000) {
+              autoJoinedRef.current.add(latest.id);
+              router.push(`/call/${latest.id}?callId=${latest.id}`);
+            }
+          }
         }
       )
       .subscribe();

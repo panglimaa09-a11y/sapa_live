@@ -20,13 +20,14 @@ export async function POST(req: Request) {
   // Kelayakan dasar kreator (data nyata dari profiles)
   const { data: creator } = await svc
     .from("profiles")
-    .select("id, role, verification_status, creator_status, account_status")
+    .select("id, role, verification_status, creator_status, account_status, is_available")
     .eq("id", creatorId)
     .maybeSingle();
   const c = creator as {
     id?: string;
     role?: string;
     account_status?: string;
+    is_available?: boolean;
   } | null;
   if (!c || c.role !== "FEMALE" || c.account_status !== "ACTIVE") {
     return fail("CREATOR_INELIGIBLE", 403);
@@ -85,15 +86,34 @@ export async function POST(req: Request) {
     .select("id")
     .single();
   if (error || !call) return fail("DB_ERROR", 500);
+  const callId = (call as { id: string }).id;
 
-  // Notifikasi ke kreator (via service_role, bypass RLS)
-  await svc.from("notifications").insert({
-    user_id: creatorId,
-    type: "call_request",
-    title: "Permintaan panggilan video",
-    body: "Seseorang ingin mengobrol denganmu. Terima atau tolak.",
-    meta: { call_id: (call as { id: string }).id },
-  });
+  // Aturan Tuan: kreator terverifikasi + toggle "Terima panggilan" ON
+  // = otomatis terima, tanpa klik manual.
+  const autoAccept = c.is_available === true;
+  if (autoAccept) {
+    await svc
+      .from("calls")
+      .update({ status: "ACCEPTED", accepted_at: new Date().toISOString() })
+      .eq("id", callId)
+      .eq("status", "REQUESTED");
+    await svc.from("notifications").insert({
+      user_id: creatorId,
+      type: "call_accepted",
+      title: "Panggilan masuk otomatis",
+      body: "Panggilan video dimulai otomatis karena kamu sedang menerima panggilan.",
+      meta: { call_id: callId },
+    });
+  } else {
+    // Notifikasi ke kreator (via service_role, bypass RLS)
+    await svc.from("notifications").insert({
+      user_id: creatorId,
+      type: "call_request",
+      title: "Permintaan panggilan video",
+      body: "Seseorang ingin mengobrol denganmu. Terima atau tolak.",
+      meta: { call_id: callId },
+    });
+  }
 
-  return ok({ call_id: (call as { id: string }).id });
+  return ok({ call_id: callId, auto_accepted: autoAccept });
 }
