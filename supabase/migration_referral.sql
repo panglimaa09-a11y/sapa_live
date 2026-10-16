@@ -50,7 +50,7 @@ alter table token_transactions drop constraint if exists token_transactions_kind
 alter table token_transactions add constraint token_transactions_kind_check
   check (kind in ('topup', 'match_spend', 'gift', 'refund', 'referral_reward', 'admin_grant'));
 
--- Besaran reward (default 17 token ≈ Rp 5.000, bisa diubah admin)
+-- Besaran reward (default 17 token, bisa diubah admin)
 create table if not exists referral_config (
   id int primary key default 1 check (id = 1),
   reward_tokens int not null default 17,
