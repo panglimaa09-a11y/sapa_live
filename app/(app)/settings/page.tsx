@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck } from "@phosphor-icons/react";
+import { Camera, ShieldCheck } from "@phosphor-icons/react";
 import { useLang, type Lang } from "../../../lib/i18n";
 import { useSession } from "../../../lib/session";
 import { getSupabase } from "../../../lib/supabase";
@@ -49,14 +49,38 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (profile) {
       setName(profile.display_name);
       setShowOnline(profile.show_online);
       setAllowRandom(profile.allow_random);
+      setAvatarUrl(profile.avatar_url);
     }
   }, [profile]);
+
+  const uploadAvatar = async (file: File) => {
+    const sb = getSupabase();
+    if (!sb || !user) return;
+    if (!file.type.startsWith("image/") || file.size > 2 * 1024 * 1024) return;
+    setUploading(true);
+    try {
+      const path = `${user.id}.jpg`;
+      const { error: upErr } = await sb.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data } = sb.storage.from("avatars").getPublicUrl(path);
+      setAvatarUrl(data.publicUrl);
+      await sb.from("profiles").update({ avatar_url: data.publicUrl }).eq("id", user.id);
+      await refresh();
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const save = async () => {
     const sb = getSupabase();
@@ -95,6 +119,44 @@ export default function SettingsPage() {
       <section className="mt-6 rounded-[28px] border border-white/10 bg-surface p-6">
         <h2 className="text-lg font-extrabold">{t("settings.profile")}</h2>
         <div className="mt-4 space-y-4">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="relative h-20 w-20 shrink-0 overflow-hidden rounded-3xl border-2 border-white/10 bg-base"
+              aria-label="Ganti foto profil"
+            >
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span className="flex h-full w-full items-center justify-center text-2xl font-extrabold text-ink-soft">
+                  {(name || "?").charAt(0).toUpperCase()}
+                </span>
+              )}
+              <span className="absolute inset-x-0 bottom-0 flex items-center justify-center bg-black/50 py-1">
+                <Camera size={14} className="text-white" />
+              </span>
+              {uploading && (
+                <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs font-bold text-white">
+                  ...
+                </span>
+              )}
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadAvatar(f);
+                e.target.value = "";
+              }}
+            />
+            <p className="text-xs font-semibold text-ink-soft">
+              Foto profil — dipakai juga untuk verifikasi wajah kreator.
+            </p>
+          </div>
           <div>
             <label htmlFor="name" className="mb-1.5 block text-sm font-bold">
               {t("auth.name")}

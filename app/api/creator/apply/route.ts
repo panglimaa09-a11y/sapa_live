@@ -27,6 +27,18 @@ export async function POST(req: Request) {
       ? body.avatar_url
       : null;
 
+  // Verifikasi wajah: skor jarak descriptor (0 = identik). Wajib lolos di client.
+  // Server TIDAK menerima foto/data wajah — hanya skor (privasi by design).
+  // Validasi rentang untuk menolak data asal-asalan.
+  const faceScore = body?.face_match_score;
+  const faceLiveness = body?.face_liveness_passed;
+  if (typeof faceScore !== "number" || !(faceScore >= 0 && faceScore < 0.6)) {
+    return fail("FACE_NOT_VERIFIED", 403);
+  }
+  if (faceLiveness !== true) {
+    return fail("FACE_NOT_VERIFIED", 403);
+  }
+
   const { error: upsertErr } = await svc.from("creator_profiles").upsert(
     {
       user_id: user.id,
@@ -51,9 +63,13 @@ export async function POST(req: Request) {
 
   await svc.from("verification_records").insert({
     user_id: user.id,
-    provider: "MANUAL_REVIEW",
+    provider: "FACE_MATCH_LIVE",
     verification_type: "IDENTITY_FACE",
     status: "PENDING",
+    provider_reference: `face_score=${faceScore.toFixed(3)};liveness=pass`,
+    face_match_score: Math.round(faceScore * 1000) / 1000,
+    face_liveness_passed: true,
+    face_verified_at: new Date().toISOString(),
   });
 
   return ok({ status: "PENDING_REVIEW" });

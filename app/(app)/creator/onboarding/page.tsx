@@ -8,6 +8,7 @@ import { Camera } from "@phosphor-icons/react";
 import { useLang } from "../../../../lib/i18n";
 import { useSession } from "../../../../lib/session";
 import { getSupabase } from "../../../../lib/supabase";
+import FaceVerify, { type FaceVerifyResult } from "../_components/FaceVerify";
 
 const inputCls =
   "w-full rounded-2xl border-2 border-white/10 bg-base px-4 py-3.5 text-[15px] font-semibold text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none";
@@ -26,6 +27,7 @@ export default function CreatorOnboardingPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [faceResult, setFaceResult] = useState<FaceVerifyResult | null>(null);
 
   const isFemale = profile?.role === "FEMALE";
   const alreadyApplied =
@@ -71,6 +73,10 @@ export default function CreatorOnboardingPage() {
       setError(t("onboarding.terms"));
       return;
     }
+    if (!faceResult?.passed) {
+      setError("Verifikasi wajah wajib lolos sebelum mendaftar sebagai kreator.");
+      return;
+    }
     setBusy(true);
     try {
       const res = await fetch("/api/creator/apply", {
@@ -80,6 +86,8 @@ export default function CreatorOnboardingPage() {
           bio: bio.trim().slice(0, 500),
           preferred_language: lang2,
           avatar_url: avatarUrl,
+          face_match_score: faceResult.matchScore,
+          face_liveness_passed: faceResult.livenessPassed,
         }),
       });
       const json = await res.json().catch(() => null);
@@ -204,9 +212,11 @@ export default function CreatorOnboardingPage() {
             <span className="font-semibold text-ink-soft">{t("onboarding.terms")}</span>
           </label>
 
+          <FaceVerify profilePhotoUrl={avatarUrl} onResult={setFaceResult} />
+
           <button
             type="submit"
-            disabled={busy || uploading}
+            disabled={busy || uploading || !faceResult?.passed}
             className="w-full rounded-2xl bg-accent px-6 py-4 text-base font-extrabold text-white disabled:opacity-60"
           >
             {busy ? t("common.loading") : t("onboarding.submit")}

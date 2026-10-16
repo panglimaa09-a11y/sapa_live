@@ -124,6 +124,8 @@ const id: Dict = {
   "match.tip_3": "Bosan? Klik Berikutnya",
   "match.demo_note":
     "Mode demo: Supabase belum dikonfigurasi. Buka SapaLive di tab browser kedua lalu klik Mulai di sana juga.",
+  "match.rate_note": "Obrolan acak memakai token: {rate} token per {seconds} detik.",
+  "match.insufficient": "Token tidak cukup. Butuh minimal {required} token — top up dulu ya.",
 
   "dashboard.hello": "Halo",
   "dashboard.sub": "Siap ketemu orang baru hari ini?",
@@ -465,6 +467,8 @@ const en: Dict = {
   "match.tip_3": "Bored? Tap Next",
   "match.demo_note":
     "Demo mode: Supabase isn't configured. Open SapaLive in a second browser tab and hit Start there too.",
+  "match.rate_note": "Random chat uses tokens: {rate} tokens per {seconds} seconds.",
+  "match.insufficient": "Not enough tokens. You need at least {required} tokens — top up first.",
 
   "dashboard.hello": "Hello",
   "dashboard.sub": "Ready to meet someone new today?",

@@ -24,9 +24,34 @@ export default function MatchPage() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [detail, setDetail] = useState("");
   const [waiting, setWaiting] = useState(0);
+  const [rateInfo, setRateInfo] = useState<{ rate: number; seconds: number } | null>(null);
   const matcher = useRef<RandomMatcher | null>(null);
   const poll = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoStarted = useRef(false);
+
+  // Ambil info tarif + saldo dompet (untuk validasi sebelum mencari).
+  const getBillingInfo = useCallback(async () => {
+    const sb = getSupabase();
+    if (!sb || !user || demo) return null;
+    const [{ data: cfg }, { data: wallet }] = await Promise.all([
+      sb.from("billing_config").select("key, value").in("key", ["tokens_per_interval", "interval_seconds"]),
+      sb.from("wallets").select("tokens").eq("user_id", user.id).maybeSingle(),
+    ]);
+    const map = new Map(
+      ((cfg ?? []) as { key: string; value: string }[]).map((r) => [r.key, r.value])
+    );
+    const rate = Number.parseInt(map.get("tokens_per_interval") ?? "", 10) || 3;
+    const seconds = Number.parseInt(map.get("interval_seconds") ?? "", 10) || 30;
+    const balance = (wallet as { tokens?: number } | null)?.tokens ?? 0;
+    return { rate, seconds, balance };
+  }, [user, demo]);
+
+  // Muat info tarif untuk ditampilkan di layar idle.
+  useEffect(() => {
+    void getBillingInfo().then((info) => {
+      if (info) setRateInfo({ rate: info.rate, seconds: info.seconds });
+    });
+  }, [getBillingInfo]);
 
   const search = useCallback(async () => {
     if (poll.current) clearInterval(poll.current);
@@ -44,6 +69,16 @@ export default function MatchPage() {
       }
       if (profile && !profile.allow_random) {
         setDetail(t("match.age_required"));
+        setPhase("error");
+        return;
+      }
+      // Cek saldo token sebelum mencari — match acak berbayar.
+      const billing = await getBillingInfo();
+      if (billing && billing.balance < billing.rate) {
+        setDetail(
+          t("match.insufficient")
+            .replace("{required}", String(billing.rate))
+        );
         setPhase("error");
         return;
       }
@@ -82,6 +117,37 @@ export default function MatchPage() {
         await m.stop();
         matcher.current = null;
         if (poll.current) clearInterval(poll.current);
+
+        // Caller membuat sesi penagihan — match acak memotong token caller.
+        let callId = "";
+        if (sb && user && peer.userId && peer.userId !== "demo" && asCaller) {
+          try {
+            const res = await fetch("/api/calls/random", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ peer_id: peer.userId, room_id: roomId }),
+            });
+            const json = await res.json().catch(() => null);
+            if (json?.ok && json?.call_id) {
+              callId = json.call_id as string;
+            } else if (json?.error === "INSUFFICIENT_BALANCE") {
+              setDetail(
+                t("match.insufficient").replace(
+                  "{required}",
+                  String(json?.required ?? "?")
+                )
+              );
+              setPhase("error");
+              return;
+            }
+          } catch {
+            // Gagal buat sesi billing → jangan lanjutkan call berbayar.
+            setDetail(t("common.error"));
+            setPhase("error");
+            return;
+          }
+        }
+
         if (sb && user && peer.userId && peer.userId !== "demo") {
           if (asCaller) {
             await sb.from("matches").insert({
@@ -102,14 +168,14 @@ export default function MatchPage() {
           });
         }
         router.push(
-          `/call/${roomId}?role=${asCaller ? "caller" : "callee"}&peer=${encodeURIComponent(peer.displayName)}&peerId=${encodeURIComponent(peer.userId)}`
+          `/call/${roomId}?role=${asCaller ? "caller" : "callee"}&peer=${encodeURIComponent(peer.displayName)}&peerId=${encodeURIComponent(peer.userId)}${callId ? `&callId=${encodeURIComponent(callId)}` : ""}`
         );
       });
     } catch {
       setDetail(t("common.error"));
       setPhase("error");
     }
-  }, [demo, profile, user, router, t, lang]);
+  }, [demo, profile, user, router, t, lang, getBillingInfo]);
 
   const cancelSearch = useCallback(async () => {
     if (poll.current) clearInterval(poll.current);
@@ -154,6 +220,14 @@ export default function MatchPage() {
               : t("match.waiting_empty")
             : t("match.sub")}
         </p>
+
+        {rateInfo && phase === "idle" && (
+          <p className="mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent">
+            {t("match.rate_note")
+              .replace("{rate}", String(rateInfo.rate))
+              .replace("{seconds}", String(rateInfo.seconds))}
+          </p>
+        )}
 
         {!supabaseConfigured && (
           <p className="mx-auto mt-5 max-w-[60ch] rounded-2xl border border-amber-300/20 bg-amber-300/5 px-4 py-3 text-center text-sm text-amber-200/90">
