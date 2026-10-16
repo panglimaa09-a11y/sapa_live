@@ -279,7 +279,7 @@ export default function SettingsPage() {
         <p className="mt-1 text-sm text-ink-soft">
           Bagikan kode referral kamu. Setiap teman yang daftar pakai kodemu{" "}
           <strong>dan lolos verifikasi wajah</strong> → kamu dapat{" "}
-          <strong>17 token</strong> (≈ Rp 5.000).
+          <strong>17 token</strong> .
         </p>
         {(profile as any)?.referral_code ? (
           <div className="mt-4 flex items-center gap-3">
