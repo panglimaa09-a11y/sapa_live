@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { VideoCamera } from "@phosphor-icons/react";
@@ -19,7 +19,7 @@ function isAdult(birth: string): boolean {
 const inputCls =
   "w-full rounded-2xl border-2 border-white/10 bg-base px-4 py-3.5 text-[15px] font-semibold text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const { t } = useLang();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -61,7 +61,6 @@ export default function RegisterPage() {
       if (err) throw err;
       const user = data.user;
       if (user) {
-        // Cari referrer bila ada kode referral.
         let referredBy: string | null = null;
         const code = referralCode.trim().toUpperCase();
         if (code) {
@@ -72,7 +71,6 @@ export default function RegisterPage() {
             .maybeSingle();
           if (ref) referredBy = ref.id;
         }
-        // Buat profil + dompet (abaikan bila email belum terverifikasi).
         await sb.from("profiles").insert({
           id: user.id,
           display_name: name.trim(),
@@ -257,5 +255,13 @@ export default function RegisterPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<main className="mx-auto max-w-md px-4 py-16 text-center text-ink-soft">Memuat…</main>}>
+      <RegisterForm />
+    </Suspense>
   );
 }
