@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle, Coins, XCircle } from "@phosphor-icons/react";
-import { useLang } from "../../../lib/i18n";
+import { useLang, usePageTitle } from "../../../lib/i18n";
 import { useSession } from "../../../lib/session";
 import { getSupabase } from "../../../lib/supabase";
 import { getWallet } from "../../../lib/wallet";
@@ -29,6 +29,7 @@ const idr = (n: number) =>
 
 export default function WalletPage() {
   const { t } = useLang();
+  usePageTitle(t("nav.wallet"));
   const { user, profile } = useSession();
   const isFemale = profile?.role === "FEMALE";
   const searchParams = useSearchParams();

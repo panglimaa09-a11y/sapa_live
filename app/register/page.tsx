@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { VideoCamera } from "@phosphor-icons/react";
-import { useLang } from "../../lib/i18n";
+import { useLang, usePageTitle } from "../../lib/i18n";
 import { getSupabase, supabaseConfigured } from "../../lib/supabase";
 import GoogleButton from "../../components/GoogleButton";
 
@@ -21,6 +21,7 @@ const inputCls =
 
 function RegisterForm() {
   const { t } = useLang();
+  usePageTitle(t("nav.register"));
   const router = useRouter();
   const searchParams = useSearchParams();
   const [name, setName] = useState("");
@@ -217,7 +218,17 @@ function RegisterForm() {
               onChange={(e) => setAgree(e.target.checked)}
               className="mt-1 h-4 w-4 accent-[#6c7cff]"
             />
-            <span className="font-semibold text-ink-soft">{t("auth.age_confirm")}</span>
+            <span className="font-semibold text-ink-soft">
+              {t("auth.age_confirm")}{" "}
+              <Link href="/terms" className="font-bold text-accent hover:underline">
+                {t("auth.terms_link")}
+              </Link>{" "}
+              {t("auth.and")}{" "}
+              <Link href="/privacy" className="font-bold text-accent hover:underline">
+                {t("auth.privacy_link")}
+              </Link>
+              .
+            </span>
           </label>
           <label className="block">
             <span className="mb-1.5 block text-sm font-bold text-ink-soft">

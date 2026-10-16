@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { VideoCamera } from "@phosphor-icons/react";
-import { useLang } from "../../lib/i18n";
+import { useLang, usePageTitle } from "../../lib/i18n";
 import { getSupabase, supabaseConfigured } from "../../lib/supabase";
 import GoogleButton from "../../components/GoogleButton";
 
@@ -13,11 +13,36 @@ const inputCls =
 
 export default function LoginPage() {
   const { t } = useLang();
+  usePageTitle(t("auth.login_btn"));
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetBusy, setResetBusy] = useState(false);
+
+  const forgotPassword = async () => {
+    setError("");
+    setResetSent(false);
+    const sb = getSupabase();
+    if (!sb || !email.trim()) {
+      setError(t("auth.reset_need_email"));
+      return;
+    }
+    setResetBusy(true);
+    try {
+      const { error: err } = await sb.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      });
+      if (err) throw err;
+      setResetSent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("common.error"));
+    } finally {
+      setResetBusy(false);
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,9 +111,19 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label htmlFor="password" className="mb-1.5 block text-sm font-bold">
-              {t("auth.password")}
-            </label>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label htmlFor="password" className="block text-sm font-bold">
+                {t("auth.password")}
+              </label>
+              <button
+                type="button"
+                onClick={() => void forgotPassword()}
+                disabled={resetBusy}
+                className="text-sm font-bold text-accent hover:underline disabled:opacity-60"
+              >
+                {t("auth.forgot")}
+              </button>
+            </div>
             <input
               id="password"
               type="password"
@@ -98,6 +133,11 @@ export default function LoginPage() {
               className={inputCls}
             />
           </div>
+          {resetSent && (
+            <p className="rounded-2xl border border-accent2/30 bg-accent2/10 px-4 py-3 text-sm text-accent2">
+              {t("auth.reset_sent")}
+            </p>
+          )}
           <button
             type="submit"
             disabled={busy || !supabaseConfigured}

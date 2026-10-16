@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, ShieldCheck } from "@phosphor-icons/react";
-import { useLang, type Lang } from "../../../lib/i18n";
+import { useLang, usePageTitle, type Lang } from "../../../lib/i18n";
 import { useSession } from "../../../lib/session";
 import { getSupabase } from "../../../lib/supabase";
 
@@ -41,6 +41,7 @@ function Toggle({
 
 export default function SettingsPage() {
   const { t, lang, setLang } = useLang();
+  usePageTitle(t("nav.settings"));
   const { user, profile, refresh } = useSession();
   const router = useRouter();
   const [name, setName] = useState("");
