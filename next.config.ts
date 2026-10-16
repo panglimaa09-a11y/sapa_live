@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      // Domain utama sapalive.my.id — alihkan semua traffic vercel.app
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "sapa-live.vercel.app" }],
+        destination: "https://sapalive.my.id/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
