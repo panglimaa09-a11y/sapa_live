@@ -1,0 +1,40 @@
+# SapaLive — stack produksi
+# Database: sapa_live (PostgreSQL). Catatan: deployment utama memakai
+# Supabase (sapa_live); service postgres di sini untuk pengembangan lokal /
+# self-host penuh.
+services:
+  sapa-live-web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://sapalive.my.id}
+    depends_on:
+      - sapa-live-redis
+      - sapa-live-postgres
+    restart: unless-stopped
+
+  # API terpisah (sapa-live-api): disiapkan untuk pemisahan backend
+  # bila skala membutuhkan. Untuk saat ini API menyatu di web (Next.js).
+  # sapa-live-api:
+  #   build: ./api
+  #   ...
+
+  sapa-live-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  sapa-live-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: sapa_live
+      POSTGRES_USER: sapalive
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - sapa-live-pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  sapa-live-pgdata:
