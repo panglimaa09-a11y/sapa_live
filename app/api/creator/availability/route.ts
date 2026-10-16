@@ -18,10 +18,7 @@ export async function POST(req: Request) {
 
   const { error } = await svc
     .from("profiles")
-    .update({
-      is_available: isAvailable,
-      updated_at: new Date().toISOString(),
-    })
+    .update({ is_available: isAvailable })
     .eq("id", user.id);
   if (error) return fail("DB_ERROR", 500);
 
