@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { VideoCamera } from "@phosphor-icons/react";
 import { useLang } from "../../lib/i18n";
 import { getSupabase, supabaseConfigured } from "../../lib/supabase";
@@ -22,6 +22,7 @@ const inputCls =
 export default function RegisterPage() {
   const { t } = useLang();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,6 +32,12 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
+
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+    if (ref) setReferralCode(ref.trim().toUpperCase());
+  }, [searchParams]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +61,17 @@ export default function RegisterPage() {
       if (err) throw err;
       const user = data.user;
       if (user) {
+        // Cari referrer bila ada kode referral.
+        let referredBy: string | null = null;
+        const code = referralCode.trim().toUpperCase();
+        if (code) {
+          const { data: ref } = await sb
+            .from("profiles")
+            .select("id")
+            .eq("referral_code", code)
+            .maybeSingle();
+          if (ref) referredBy = ref.id;
+        }
         // Buat profil + dompet (abaikan bila email belum terverifikasi).
         await sb.from("profiles").insert({
           id: user.id,
@@ -61,6 +79,7 @@ export default function RegisterPage() {
           birth_date: birth,
           age_verified: true,
           role,
+          ...(referredBy ? { referred_by: referredBy } : {}),
         });
         await sb.from("wallets").insert({ user_id: user.id });
       }
@@ -201,6 +220,18 @@ export default function RegisterPage() {
               className="mt-1 h-4 w-4 accent-[#6c7cff]"
             />
             <span className="font-semibold text-ink-soft">{t("auth.age_confirm")}</span>
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-bold text-ink-soft">
+              Kode referral <span className="font-normal">(opsional — dari teman yang mengundang)</span>
+            </span>
+            <input
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+              placeholder="Contoh: X7K2P9QW"
+              maxLength={8}
+              className={inputCls}
+            />
           </label>
           <button
             type="submit"

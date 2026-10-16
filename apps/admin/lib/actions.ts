@@ -630,3 +630,66 @@ export async function removeAdminRoleAction(
   revalidatePath("/access-control");
   return { ok: true };
 }
+
+/** Admin kirim token gratis ke user via email. Tercatat di audit + admin_token_grants. */
+export async function grantTokensAction(
+  _prev: ActionResult,
+  form: FormData
+): Promise<ActionResult> {
+  const staff = await requirePermission("tokens:grant");
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const amount = Math.floor(Number(form.get("amount") ?? 0));
+  const note = String(form.get("note") ?? "").trim().slice(0, 200);
+  if (!email || !email.includes("@"))
+    return { ok: false, error: "Email tidak valid." };
+  if (!Number.isFinite(amount) || amount <= 0 || amount > 100000)
+    return { ok: false, error: "Jumlah token harus 1–100.000." };
+
+  const svc = getServiceClient();
+  // Cari user_id dari email via Auth Admin API (service_role).
+  const { data: userList, error: listErr } =
+    await svc.auth.admin.listUsers({ perPage: 1000 });
+  if (listErr)
+    return { ok: false, error: "Gagal mencari user: " + listErr.message };
+  const target = userList.users.find(
+    (u) => (u.email ?? "").toLowerCase() === email
+  );
+  if (!target)
+    return { ok: false, error: "User dengan email tersebut tidak ditemukan." };
+  const targetId = target.id;
+
+  // Kredit wallet: baca saldo → tambah → upsert (admin grant frekuensi rendah).
+  const { data: wRow } = await svc
+    .from("wallets")
+    .select("tokens")
+    .eq("user_id", targetId)
+    .maybeSingle();
+  const newBalance = (wRow?.tokens ?? 0) + amount;
+  const { error: wErr } = await svc.from("wallets").upsert(
+    { user_id: targetId, tokens: newBalance, updated_at: new Date().toISOString() },
+    { onConflict: "user_id" }
+  );
+  if (wErr) return { ok: false, error: "Gagal update wallet: " + wErr.message };
+
+  // Catat transaksi + audit grant.
+  await svc.from("token_transactions").insert({
+    user_id: targetId,
+    kind: "admin_grant",
+    amount,
+    meta: { granted_by: staff.userId, note },
+  });
+  await svc.from("admin_token_grants").insert({
+    admin_id: staff.userId,
+    target_user_id: targetId,
+    target_email: email,
+    amount,
+    note,
+  });
+  await logAudit(staff.userId, "tokens.grant", "wallets", targetId, {
+    email,
+    amount,
+    note,
+  });
+  revalidatePath("/tokens");
+  return { ok: true };
+}

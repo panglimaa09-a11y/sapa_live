@@ -13,6 +13,7 @@ export type Permission =
   | "users:read"
   | "users:write"
   | "users:suspend"
+  | "tokens:grant"
   | "creators:read"
   | "creators:write"
   | "verifications:read"
@@ -38,6 +39,7 @@ const ALL: Permission[] = [
   "users:read",
   "users:write",
   "users:suspend",
+  "tokens:grant",
   "creators:read",
   "creators:write",
   "verifications:read",
@@ -66,6 +68,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "users:read",
     "users:write",
     "users:suspend",
+    "tokens:grant",
     "creators:read",
     "creators:write",
     "verifications:read",
@@ -121,6 +124,7 @@ export const MENU: MenuItem[] = [
   { href: "/verifications", label: "Verifikasi", perm: "verifications:read" },
   { href: "/calls", label: "Panggilan", perm: "calls:read" },
   { href: "/transactions", label: "Transaksi", perm: "transactions:read" },
+  { href: "/tokens", label: "Kirim Token", perm: "tokens:grant" },
   { href: "/earnings", label: "Penghasilan", perm: "earnings:read" },
   { href: "/withdrawals", label: "Penarikan", perm: "withdrawals:read" },
   { href: "/reports", label: "Laporan", perm: "reports:read" },

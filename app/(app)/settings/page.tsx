@@ -273,6 +273,36 @@ export default function SettingsPage() {
           </div>
         )}
       </section>
+
+      <section className="rounded-3xl border border-white/10 bg-surface p-6">
+        <h2 className="text-lg font-extrabold">Undang Teman</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Bagikan kode referral kamu. Setiap teman yang daftar pakai kodemu{" "}
+          <strong>dan lolos verifikasi wajah</strong> → kamu dapat{" "}
+          <strong>17 token</strong> (≈ Rp 5.000).
+        </p>
+        {(profile as any)?.referral_code ? (
+          <div className="mt-4 flex items-center gap-3">
+            <code className="rounded-2xl bg-base px-5 py-3 text-2xl font-extrabold tracking-widest text-accent">
+              {(profile as any).referral_code}
+            </code>
+            <button
+              onClick={() => {
+                const code = (profile as any).referral_code;
+                const url = `${window.location.origin}/register?ref=${code}`;
+                navigator.clipboard.writeText(url).then(() =>
+                  alert("Link undangan tersalin!")
+                );
+              }}
+              className="rounded-2xl bg-accent px-4 py-3 font-extrabold text-white"
+            >
+              Salin Link
+            </button>
+          </div>
+        ) : (
+          <p className="mt-4 text-sm text-ink-soft">Memuat kode referral…</p>
+        )}
+      </section>
     </div>
   );
 }
