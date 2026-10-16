@@ -86,7 +86,7 @@ export default function DashboardPage() {
           {greeting}
           {name ? `, ${name}` : ""}
         </p>
-        <h1 className="mt-2 font-display text-[clamp(2.8rem,10vw,4.5rem)] leading-[0.95] tracking-wide">
+        <h1 className="mt-2 font-display text-[clamp(2.6rem,9vw,4rem)] leading-[1.02] tracking-tight font-semibold">
           {t("dashboard.title")}
         </h1>
         <p className="mt-3 max-w-[46ch] text-ink-soft">{t("dashboard.sub")}</p>
@@ -124,7 +124,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="mt-10" aria-label={t("dashboard.quick_links")}>
-        <h2 className="font-display text-3xl tracking-wide">{t("dashboard.quick_links")}</h2>
+        <h2 className="font-display text-3xl tracking-tight font-semibold">{t("dashboard.quick_links")}</h2>
         <div className="mt-4 grid grid-cols-3 gap-3 sm:gap-4">
           {[
             { href: "/explore", label: t("nav.explore"), icon: Compass },
@@ -170,7 +170,7 @@ export default function DashboardPage() {
 
       <section className="mt-10" aria-label={t("dashboard.recent_label")}>
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-3xl tracking-wide">{t("dashboard.recent")}</h2>
+          <h2 className="font-display text-3xl tracking-tight font-semibold">{t("dashboard.recent")}</h2>
           <Link
             href="/connections"
             className="inline-flex items-center gap-1 text-sm font-bold text-accent hover:underline"

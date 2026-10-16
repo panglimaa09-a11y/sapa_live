@@ -16,7 +16,7 @@ export default function Faq() {
 
   return (
     <section id="faq" className="mx-auto w-full max-w-4xl px-4 py-20 sm:px-6 lg:py-28">
-      <h2 className="font-display text-5xl tracking-wide sm:text-6xl">
+      <h2 className="font-display text-5xl tracking-tight font-semibold sm:text-6xl">
         {t("landing.faq_title")}
       </h2>
 

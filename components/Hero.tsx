@@ -27,8 +27,9 @@ export default function Hero() {
             {t("landing.live_now")}
           </p>
 
-          <h1 className="mt-6 font-display text-[clamp(3.5rem,12vw,7rem)] leading-[0.95] tracking-wide text-ink">
-            {t("landing.hero_title")}
+          <h1 className="mt-6 font-display text-[clamp(3rem,10vw,6rem)] font-semibold leading-[1.02] tracking-tight text-ink">
+            {t("landing.hero_title_a")}{" "}
+            <em className="text-accent">{t("landing.hero_title_b")}</em>
           </h1>
 
           <p className="mt-5 max-w-[44ch] text-lg leading-relaxed text-ink-soft">

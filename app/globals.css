@@ -18,9 +18,9 @@
   --color-ember-dark: #c77f1a;
   --color-leaf: #7bc47f;
 
-  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui,
+  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui,
     -apple-system, "Segoe UI", sans-serif;
-  --font-display: var(--font-bebas), "Bebas Neue", "Arial Narrow", sans-serif;
+  --font-display: var(--font-fraunces), "Fraunces", Georgia, serif;
 }
 
 html {

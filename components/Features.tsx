@@ -16,7 +16,7 @@ export default function Features() {
   ];
   return (
     <section id="fitur" className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
-      <h2 className="max-w-2xl font-display text-5xl tracking-wide sm:text-6xl">
+      <h2 className="max-w-2xl font-display text-5xl tracking-tight font-semibold sm:text-6xl">
         {t("landing.feat_title")}
       </h2>
 

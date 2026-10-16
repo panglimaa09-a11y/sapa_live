@@ -149,7 +149,7 @@ export default function DiscoverPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <div className="pt-8">
-        <h1 className="font-display text-[clamp(2.8rem,10vw,4.5rem)] leading-[0.95] tracking-wide">
+        <h1 className="font-display text-[clamp(2.6rem,9vw,4rem)] leading-[1.02] tracking-tight font-semibold">
           {t("discover.title")}
         </h1>
         <p className="mt-3 max-w-[52ch] text-ink-soft">{t("discover.sub")}</p>

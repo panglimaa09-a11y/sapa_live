@@ -1,21 +1,22 @@
 // avoid-ai-design-ignore-file: T1 (PRD mandates Inter)
 import type { Metadata, Viewport } from "next";
-import { Inter, Bebas_Neue } from "next/font/google";
+import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "../lib/i18n";
 import SwRegister from "../components/SwRegister";
 
-const inter = Inter({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-jakarta",
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
-const bebas = Bebas_Neue({
+const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-bebas",
-  weight: ["400"],
+  variable: "--font-fraunces",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -61,7 +62,7 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body
-        className={`${inter.variable} ${bebas.variable} bg-paper font-sans text-ink antialiased`}
+        className={`${jakarta.variable} ${fraunces.variable} bg-paper font-sans text-ink antialiased`}
       >
         <LanguageProvider>
           <SwRegister />

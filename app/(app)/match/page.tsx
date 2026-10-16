@@ -208,7 +208,7 @@ export default function MatchPage() {
             : t("match.sub")}
         </p>
 
-        <h1 className="mt-3 font-display text-[clamp(2.8rem,10vw,4.5rem)] leading-[0.95] tracking-wide">
+        <h1 className="mt-3 font-display text-[clamp(2.6rem,9vw,4rem)] leading-[1.02] tracking-tight font-semibold">
           {phase === "searching" ? t("match.searching") : t("match.title")}
         </h1>
 
