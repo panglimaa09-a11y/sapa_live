@@ -47,9 +47,12 @@ async function checkPakasir(): Promise<Check> {
     });
     clearTimeout(t);
     const ms = Date.now() - t0;
+    // 403/401 pada probe tanpa kredensial = server hidup & merespons.
+    // Hanya 5xx/timeout yang menandakan masalah.
+    const reachable = res.status < 500;
     return {
       ...base,
-      status: res.ok ? "healthy" : "degraded",
+      status: reachable ? "healthy" : "degraded",
       detail: `HTTP ${res.status} · ${ms} ms (hanya cek koneksi)`,
     };
   } catch {

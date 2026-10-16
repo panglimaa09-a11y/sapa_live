@@ -15,6 +15,26 @@ import type { NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/login"];
 
+// Cache validasi sesi: userId -> { role, exp }. Menghindari 2 round-trip
+// network (Auth + DB) di setiap navigasi. TTL 60 detik — tradeoff wajar
+// untuk panel admin (token revoke maksimal telat 60 dtk).
+const sessionCache = new Map<string, { role: string; exp: number }>();
+const CACHE_TTL_MS = 60_000;
+
+/** Decode payload JWT tanpa verifikasi signature (hanya untuk baca exp/sub). */
+function decodeJwtPayload(token: string): { sub?: string; exp?: number } | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const bin = atob(b64);
+    const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  } catch {
+    return null;
+  }
+}
+
 function supabaseUrl(): string {
   return (
     process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""
@@ -43,45 +63,71 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // 1. Sesi Supabase valid? (getUser memvalidasi token ke Supabase Auth)
+  // 1. Sesi Supabase valid?
+  // Optimasi: decode JWT lokal untuk cek expiry. Hanya hit network
+  // (getUser) bila token hampir/ sudah kedaluwarsa atau tidak terbaca.
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  let userId: string | null = null;
+
+  if (session?.access_token) {
+    const payload = decodeJwtPayload(session.access_token);
+    const nowSec = Math.floor(Date.now() / 1000);
+    if (payload?.sub && payload.exp && payload.exp > nowSec + 30) {
+      userId = payload.sub;
+    }
+  }
+  if (!userId) {
+    // Token tidak ada/kedaluwarsa/tak terbaca → validasi penuh ke server.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    userId = user?.id ?? null;
+  }
 
   const loginUrl = new URL("/login", request.url);
   const fail = () => NextResponse.redirect(loginUrl);
 
-  if (!user) {
+  if (!userId) {
     if (PUBLIC_PATHS.includes(pathname)) return response;
     return fail();
   }
 
-  // 2. Terdaftar sebagai staf? (via service_role, bypass RLS)
-  const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+  // 2. Terdaftar sebagai staf? (cache 60 dtk, via service_role bypass RLS)
+  const cacheKey = userId;
+  const cached = sessionCache.get(cacheKey);
   let role: string | null = null;
-  try {
-    const roleRes = await fetch(
-      `${supabaseUrl()}/rest/v1/admin_roles?user_id=eq.${user.id}&select=role`,
-      {
-        headers: {
-          apikey: svcKey,
-          Authorization: `Bearer ${svcKey}`,
-        },
+  if (cached && cached.exp > Date.now()) {
+    role = cached.role;
+  } else {
+    sessionCache.delete(cacheKey);
+    const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+    try {
+      const roleRes = await fetch(
+        `${supabaseUrl()}/rest/v1/admin_roles?user_id=eq.${userId}&select=role`,
+        {
+          headers: {
+            apikey: svcKey,
+            Authorization: `Bearer ${svcKey}`,
+          },
+        }
+      );
+      if (!roleRes.ok) {
+        return new NextResponse("Layanan autentikasi tidak tersedia. Coba lagi.", {
+          status: 503,
+          headers: { "Content-Type": "text/plain; charset=utf-8" },
+        });
       }
-    );
-    if (!roleRes.ok) {
+      const rows = (await roleRes.json()) as { role?: string }[];
+      role = rows[0]?.role ?? null;
+      if (role) sessionCache.set(cacheKey, { role, exp: Date.now() + CACHE_TTL_MS });
+    } catch {
       return new NextResponse("Layanan autentikasi tidak tersedia. Coba lagi.", {
         status: 503,
         headers: { "Content-Type": "text/plain; charset=utf-8" },
       });
     }
-    const rows = (await roleRes.json()) as { role?: string }[];
-    role = rows[0]?.role ?? null;
-  } catch {
-    return new NextResponse("Layanan autentikasi tidak tersedia. Coba lagi.", {
-      status: 503,
-      headers: { "Content-Type": "text/plain; charset=utf-8" },
-    });
   }
   if (!role) return fail();
 
