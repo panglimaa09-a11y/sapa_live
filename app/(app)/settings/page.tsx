@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, ShieldCheck } from "@phosphor-icons/react";
+import { Camera, ShieldCheck, SignOut } from "@phosphor-icons/react";
 import { useLang, usePageTitle, type Lang } from "../../../lib/i18n";
 import { useSession } from "../../../lib/session";
 import { getSupabase } from "../../../lib/supabase";
@@ -122,6 +122,12 @@ export default function SettingsPage() {
     if (!sb || !user) return;
     await sb.from("profiles").delete().eq("id", user.id);
     await sb.auth.signOut();
+    router.replace("/");
+  };
+
+  const signOut = async () => {
+    const sb = getSupabase();
+    if (sb) await sb.auth.signOut();
     router.replace("/");
   };
 
@@ -259,6 +265,20 @@ export default function SettingsPage() {
           {t("settings.saved")}
         </p>
       )}
+
+      <section className="mt-8 rounded-[28px] border border-white/10 bg-surface p-6">
+        <h2 className="text-lg font-extrabold tracking-tight">
+          {t("settings.account")}
+        </h2>
+        <p className="mt-1 text-sm text-ink-soft">{t("settings.account_desc")}</p>
+        <button
+          onClick={() => void signOut()}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-white/15 px-6 py-4 text-base font-extrabold text-ink transition-colors hover:border-white/30"
+        >
+          <SignOut size={20} weight="bold" aria-hidden />
+          {t("nav.logout")}
+        </button>
+      </section>
 
       <section className="mt-8 rounded-[28px] border border-red-500/30 bg-red-500/5 p-6">
         <h2 className="text-lg font-extrabold text-red-300">

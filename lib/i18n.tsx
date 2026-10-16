@@ -210,6 +210,8 @@ const id: Dict = {
   "settings.save": "Simpan",
   "settings.saved": "Tersimpan.",
   "settings.danger": "Zona berbahaya",
+  "settings.account": "Akun",
+  "settings.account_desc": "Keluar dari akun ini. Data kamu tetap tersimpan.",
   "settings.delete": "Hapus akun",
   "settings.delete_confirm": "Hapus profil dan keluar? Tindakan ini tidak bisa dibatalkan.",
   "settings.age": "Status usia",
@@ -589,6 +591,8 @@ const en: Dict = {
   "settings.save": "Save",
   "settings.saved": "Saved.",
   "settings.danger": "Danger zone",
+  "settings.account": "Account",
+  "settings.account_desc": "Sign out of this account. Your data stays saved.",
   "settings.delete": "Delete account",
   "settings.delete_confirm":
     "Delete profile and sign out? This can't be undone.",
