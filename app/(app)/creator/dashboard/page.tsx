@@ -41,6 +41,8 @@ export default function CreatorDashboardPage() {
   const [isAvailable, setIsAvailable] = useState(false);
   const [toggling, setToggling] = useState(false);
   const [incoming, setIncoming] = useState<CallRow[]>([]);
+  const [responding, setResponding] = useState<string | null>(null);
+  const [respondError, setRespondError] = useState("");
   const [history, setHistory] = useState<CallRow[]>([]);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [withdrawMsg, setWithdrawMsg] = useState("");
@@ -145,14 +147,31 @@ export default function CreatorDashboardPage() {
   };
 
   const respond = async (callId: string, action: "accept" | "decline") => {
-    const res = await fetch(`/api/calls/${callId}/${action}`, { method: "POST" });
-    const json = await res.json().catch(() => null);
-    if (res.ok && json?.ok) {
-      if (action === "accept") {
-        router.push(`/call/${callId}?callId=${callId}`);
+    setResponding(callId);
+    setRespondError("");
+    try {
+      const res = await fetch(`/api/calls/${callId}/${action}`, { method: "POST" });
+      const json = await res.json().catch(() => null);
+      if (res.ok && json?.ok) {
+        if (action === "accept") {
+          router.push(`/call/${callId}?callId=${callId}`);
+        } else {
+          setIncoming((prev) => prev.filter((c) => c.id !== callId));
+        }
       } else {
-        setIncoming((prev) => prev.filter((c) => c.id !== callId));
+        const err = (json as { error?: string } | null)?.error;
+        setRespondError(
+          err === "CREATOR_NOT_FACE_VERIFIED"
+            ? t("cdash.not_face_verified")
+            : err === "INVALID_STATE"
+              ? t("cdash.call_expired")
+              : t("common.error")
+        );
       }
+    } catch {
+      setRespondError(t("common.error"));
+    } finally {
+      setResponding(null);
     }
   };
 
@@ -237,6 +256,11 @@ export default function CreatorDashboardPage() {
 
         <section className="mt-10" aria-label={t("cdash.incoming")}>
           <h2 className="text-xl font-extrabold tracking-tight">{t("cdash.incoming")}</h2>
+          {respondError && (
+            <p className="mt-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+              {respondError}
+            </p>
+          )}
           <div className="mt-4 space-y-3">
             {incoming.length === 0 && (
               <div className="overflow-hidden rounded-3xl border border-white/10 bg-surface">
@@ -257,17 +281,25 @@ export default function CreatorDashboardPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => void respond(c.id, "decline")}
-                    className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white/15 text-ink-soft hover:text-ink"
+                    disabled={responding !== null}
+                    className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white/15 text-ink-soft hover:text-ink disabled:opacity-40"
                     aria-label={t("cdash.decline")}
                   >
                     <PhoneDisconnect size={20} />
                   </button>
                   <button
                     onClick={() => void respond(c.id, "accept")}
-                    className="flex h-11 items-center gap-2 rounded-full bg-accent2 px-5 font-extrabold text-ink"
+                    disabled={responding !== null}
+                    className="flex h-11 min-w-[120px] items-center justify-center gap-2 rounded-full bg-accent2 px-5 font-extrabold text-ink disabled:opacity-60"
                   >
-                    <PhoneCall size={18} weight="fill" aria-hidden />
-                    {t("cdash.accept")}
+                    {responding === c.id ? (
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-ink/30 border-t-ink" aria-hidden />
+                    ) : (
+                      <>
+                        <PhoneCall size={18} weight="fill" aria-hidden />
+                        {t("cdash.accept")}
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
