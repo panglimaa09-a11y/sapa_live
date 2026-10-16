@@ -11,6 +11,7 @@ import { cookies } from "next/headers";
 export type Profile = {
   id: string;
   display_name: string | null;
+  bio: string | null;
   role: string | null;
   date_of_birth: string | null;
   language: string | null;

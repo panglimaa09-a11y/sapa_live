@@ -29,7 +29,8 @@ const idr = (n: number) =>
 
 export default function WalletPage() {
   const { t } = useLang();
-  const { user } = useSession();
+  const { user, profile } = useSession();
+  const isFemale = profile?.role === "FEMALE";
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order_id");
 
@@ -40,6 +41,10 @@ export default function WalletPage() {
   const [buying, setBuying] = useState<string | null>(null);
   const [orderState, setOrderState] = useState<OrderState>("idle");
   const [credited, setCredited] = useState(0);
+  const [available, setAvailable] = useState(0);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawMsg, setWithdrawMsg] = useState("");
+  const [withdrawBusy, setWithdrawBusy] = useState(false);
   const poll = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadAll = useCallback(async () => {
@@ -54,6 +59,19 @@ export default function WalletPage() {
         .order("created_at", { ascending: false })
         .limit(50);
       setLedger((data ?? []) as LedgerRow[]);
+      if (profile?.role === "FEMALE") {
+        const { data: earns } = await sb
+          .from("creator_earnings")
+          .select("net_tokens")
+          .eq("creator_id", user.id)
+          .eq("status", "AVAILABLE");
+        setAvailable(
+          ((earns ?? []) as { net_tokens: number }[]).reduce(
+            (s, e) => s + (Number(e.net_tokens) || 0),
+            0
+          )
+        );
+      }
     }
     try {
       const res = await fetch("/api/topup/packages", { cache: "no-store" });
@@ -63,7 +81,7 @@ export default function WalletPage() {
       setPackages([]);
     }
     setLoading(false);
-  }, [user]);
+  }, [user, profile]);
 
   useEffect(() => {
     void loadAll();
@@ -115,6 +133,30 @@ export default function WalletPage() {
       }
     } finally {
       setBuying(null);
+    }
+  };
+
+  const requestWithdraw = async () => {
+    const amount = Math.floor(Number(withdrawAmount));
+    if (!(amount > 0) || amount > available) return;
+    setWithdrawBusy(true);
+    setWithdrawMsg("");
+    try {
+      const res = await fetch("/api/withdrawals/request", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ amount_tokens: amount }),
+      });
+      const json = await res.json().catch(() => null);
+      if (res.ok && json?.ok) {
+        setWithdrawMsg(t("cdash.withdraw_sent"));
+        setWithdrawAmount("");
+        void loadAll();
+      } else {
+        setWithdrawMsg(t("common.error"));
+      }
+    } finally {
+      setWithdrawBusy(false);
     }
   };
 
@@ -171,6 +213,38 @@ export default function WalletPage() {
           </p>
         </div>
 
+        {isFemale ? (
+          <section className="mt-10" aria-label={t("cdash.withdraw")}>
+            <h2 className="text-xl font-extrabold tracking-tight">{t("cdash.withdraw")}</h2>
+            <div className="mt-4 rounded-[28px] border border-white/10 bg-surface p-5">
+              <p className="text-sm text-ink-soft">
+                {t("cdash.available")}:{" "}
+                <span className="font-extrabold text-ink tabular-nums">{available}</span>{" "}
+                {t("cdash.token_unit")}
+              </p>
+              <div className="mt-3 flex gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  max={available}
+                  value={withdrawAmount}
+                  onChange={(e) => setWithdrawAmount(e.target.value)}
+                  placeholder={t("cdash.withdraw_amount")}
+                  className="flex-1 rounded-2xl border-2 border-white/10 bg-base px-4 py-3 text-[15px] font-semibold text-ink focus:border-accent focus:outline-none"
+                />
+                <button
+                  onClick={() => void requestWithdraw()}
+                  disabled={withdrawBusy || !withdrawAmount || Number(withdrawAmount) <= 0 || Number(withdrawAmount) > available}
+                  className="rounded-2xl bg-accent px-6 py-3 text-sm font-extrabold text-white disabled:opacity-40"
+                >
+                  {t("cdash.withdraw")}
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-ink-soft">{t("cdash.withdraw_hint")}</p>
+              {withdrawMsg && <p className="mt-2 text-sm font-bold text-accent2">{withdrawMsg}</p>}
+            </div>
+          </section>
+        ) : (
         <section className="mt-10" aria-label={t("wallet.topup")}>
           <h2 className="text-xl font-extrabold tracking-tight">{t("wallet.topup")}</h2>
           <p className="mt-1 text-xs text-ink-soft">{t("wallet.packages_note")}</p>
@@ -205,6 +279,7 @@ export default function WalletPage() {
             )}
           </div>
         </section>
+        )}
 
         <section className="mt-10" aria-label={t("wallet.history")}>
           <h2 className="text-xl font-extrabold tracking-tight">{t("wallet.history")}</h2>

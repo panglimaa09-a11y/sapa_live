@@ -52,7 +52,7 @@ export default function CreatorOnboardingPage() {
     setUploading(true);
     setError("");
     try {
-      const path = `${user.id}.jpg`;
+      const path = `${user.id}/avatar.jpg`;
       const { error: upErr } = await sb.storage
         .from("avatars")
         .upload(path, file, { upsert: true, contentType: file.type });

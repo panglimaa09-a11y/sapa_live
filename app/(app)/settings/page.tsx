@@ -44,6 +44,7 @@ export default function SettingsPage() {
   const { user, profile, refresh } = useSession();
   const router = useRouter();
   const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
   const [showOnline, setShowOnline] = useState(true);
   const [allowRandom, setAllowRandom] = useState(true);
   const [saved, setSaved] = useState(false);
@@ -57,6 +58,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (profile) {
       setName(profile.display_name);
+      setBio(profile.bio ?? "");
       setShowOnline(profile.show_online);
       setAllowRandom(profile.allow_random);
       setAvatarUrl(profile.avatar_url);
@@ -101,6 +103,7 @@ export default function SettingsPage() {
       .from("profiles")
       .update({
         display_name: name.trim().slice(0, 40) || profile?.display_name,
+        bio: bio.trim().slice(0, 300) || null,
         language: lang,
         show_online: showOnline,
         allow_random: allowRandom,
@@ -181,6 +184,20 @@ export default function SettingsPage() {
               onChange={(e) => setName(e.target.value)}
               maxLength={40}
               className={inputCls}
+            />
+          </div>
+          <div>
+            <label htmlFor="bio" className="mb-1.5 block text-sm font-bold">
+              {t("settings.bio")}
+            </label>
+            <textarea
+              id="bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              maxLength={300}
+              rows={3}
+              placeholder={t("settings.bio_ph")}
+              className={`${inputCls} resize-none`}
             />
           </div>
           <div className="flex items-center gap-2 rounded-2xl bg-base px-4 py-3.5 text-sm">

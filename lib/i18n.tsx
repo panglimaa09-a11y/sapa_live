@@ -185,6 +185,8 @@ const id: Dict = {
   "settings.delete_confirm": "Hapus profil dan keluar? Tindakan ini tidak bisa dibatalkan.",
   "settings.age": "Status usia",
   "settings.verified": "Terverifikasi 18+",
+  "settings.bio": "Bio",
+  "settings.bio_ph": "Ceritakan tentang dirimu...",
 
   "safety.title": "Pusat Keamanan",
   "safety.sub": "Ngobrol seru dimulai dari rasa aman.",
@@ -530,6 +532,8 @@ const en: Dict = {
     "Delete profile and sign out? This can't be undone.",
   "settings.age": "Age status",
   "settings.verified": "Verified 18+",
+  "settings.bio": "Bio",
+  "settings.bio_ph": "Tell us about yourself...",
 
   "safety.title": "Safety Center",
   "safety.sub": "Great chats start with feeling safe.",
