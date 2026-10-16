@@ -111,8 +111,8 @@ export async function loginAction(
       .select("enabled")
       .eq("user_id", data.user.id)
       .maybeSingle();
-    if (mfaRow && mfaRow.enabled !== false) redirect("/mfa");
-    redirect("/mfa-setup");
+    void mfaRow; // MFA dinonaktifkan atas permintaan owner (16 Okt 2026).
+    redirect("/dashboard");
   } catch (e) {
     if (e instanceof Error && e.message === "NEXT_REDIRECT") throw e;
     return { ok: false, error: "Login gagal. Coba lagi." };

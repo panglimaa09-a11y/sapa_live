@@ -43,13 +43,9 @@ export async function getStaffSession(): Promise<StaffSession | null> {
       .select("enabled")
       .eq("user_id", user.id)
       .maybeSingle();
-    const mfaEnrolled = !!mfaRow && mfaRow.enabled !== false;
-
-    if (mfaEnrolled) {
-      const store = await cookies();
-      const mfaUser = verifyMfaCookie(store.get(MFA_COOKIE)?.value);
-      if (mfaUser !== user.id) return null;
-    }
+    // MFA dinonaktifkan atas permintaan owner (16 Okt 2026): anggap tidak enroll.
+    const mfaEnrolled = false;
+    void mfaRow;
 
     return {
       userId: user.id,

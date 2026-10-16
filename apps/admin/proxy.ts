@@ -160,43 +160,19 @@ export async function proxy(request: NextRequest) {
   }
   if (!roles.length || !roles[0].role) return fail();
 
-  // 3. MFA.
-  const signingKey = process.env.ADMIN_MFA_ENCRYPTION_KEY ?? "";
-  let mfaRows: { enabled?: boolean }[] = [];
-  try {
-    const mfaRes = await supaFetch(
-      `/rest/v1/admin_mfa?user_id=eq.${userId}&select=enabled`,
-      svcKey,
-      true
-    );
-    if (!mfaRes.ok) return unavailable();
-    mfaRows = (await mfaRes.json()) as { enabled?: boolean }[];
-  } catch {
-    return unavailable();
-  }
-  const mfaEnrolled = mfaRows.some((r) => r.enabled !== false);
+  // 3. MFA DINONAKTIFKAN atas permintaan owner (16 Okt 2026).
+  //    Blok pengecekan MFA di bawah dipertahankan sebagai komentar
+  //    bila suatu saat ingin diaktifkan lagi.
 
   if (PUBLIC_PATHS.includes(pathname)) {
     // Sudah login penuh → jangan tampilkan halaman login lagi.
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  if (mfaEnrolled) {
-    const mfaUser = await verifyMfaCookie(
-      request.cookies.get("admfa")?.value,
-      signingKey
-    );
-    if (mfaUser !== userId) {
-      // Izinkan alur penyelesaian MFA saja.
-      if (MFA_FLOW_PATHS.includes(pathname)) return NextResponse.next();
-      return NextResponse.redirect(new URL("/mfa", request.url));
-    }
-  } else {
-    // MFA wajib: paksa enrollment sebelum bisa ke mana-mana.
-    if (!MFA_FLOW_PATHS.includes(pathname)) {
-      return NextResponse.redirect(new URL("/mfa-setup", request.url));
-    }
-  }
+  /* MFA (nonaktif):
+  const signingKey = process.env.ADMIN_MFA_ENCRYPTION_KEY ?? "";
+  ...
+  */
 
   return NextResponse.next();
 }
