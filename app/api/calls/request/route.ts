@@ -1,0 +1,82 @@
+import { ok, fail, readJson, requireUser } from "@/lib/api-util";
+import { isActiveUser, isEligibleCreator } from "@/lib/server";
+import { BILLING } from "@/lib/billing";
+
+// POST /api/calls/request {creator_id}
+// Semua pemeriksaan kelayakan & saldo dilakukan di server.
+export async function POST(req: Request) {
+  const ctx = await requireUser();
+  if (!ctx) return fail("UNAUTHENTICATED", 401);
+  const { user, profile, svc } = ctx;
+
+  if (!isActiveUser(profile)) return fail("ACCOUNT_NOT_ELIGIBLE", 403);
+
+  const body = await readJson(req);
+  const creatorId =
+    typeof body?.creator_id === "string" ? body.creator_id : "";
+  if (!creatorId) return fail("CREATOR_ID_REQUIRED", 400);
+  if (creatorId === user.id) return fail("CANNOT_CALL_SELF", 400);
+
+  // Kelayakan kreator (data nyata dari profiles)
+  const { data: creator } = await svc
+    .from("profiles")
+    .select("id, role, verification_status, creator_status, account_status")
+    .eq("id", creatorId)
+    .maybeSingle();
+  if (!isEligibleCreator(creator as never)) {
+    return fail("CREATOR_INELIGIBLE", 403);
+  }
+
+  // Relasi blokir dua arah
+  const { data: blocks } = await svc
+    .from("blocks")
+    .select("blocker_id, blocked_id")
+    .or(
+      `and(blocker_id.eq.${user.id},blocked_id.eq.${creatorId}),and(blocker_id.eq.${creatorId},blocked_id.eq.${user.id})`
+    )
+    .limit(1);
+  if (blocks && blocks.length > 0) return fail("BLOCKED", 403);
+
+  // Tarif & saldo (server-side, bukan dari klien)
+  const { data: cp } = await svc
+    .from("creator_profiles")
+    .select("rate_tokens_per_interval")
+    .eq("user_id", creatorId)
+    .maybeSingle();
+  const rate =
+    (cp as { rate_tokens_per_interval?: number } | null)
+      ?.rate_tokens_per_interval ?? BILLING.tokensPerInterval;
+
+  const { data: wallet } = await svc
+    .from("wallets")
+    .select("tokens")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const balance = (wallet as { tokens?: number } | null)?.tokens ?? 0;
+  if (balance < rate) {
+    return fail("INSUFFICIENT_BALANCE", 402, { required: rate, balance });
+  }
+
+  // Buat sesi panggilan
+  const { data: call, error } = await svc
+    .from("calls")
+    .insert({
+      male_user_id: user.id,
+      female_creator_id: creatorId,
+      status: "REQUESTED",
+    })
+    .select("id")
+    .single();
+  if (error || !call) return fail("DB_ERROR", 500);
+
+  // Notifikasi ke kreator (via service_role, bypass RLS)
+  await svc.from("notifications").insert({
+    user_id: creatorId,
+    type: "call_request",
+    title: "Permintaan panggilan video",
+    body: "Seseorang ingin mengobrol denganmu. Terima atau tolak.",
+    meta: { call_id: (call as { id: string }).id },
+  });
+
+  return ok({ call_id: (call as { id: string }).id });
+}

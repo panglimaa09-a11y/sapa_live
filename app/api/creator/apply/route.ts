@@ -1,0 +1,60 @@
+import { ok, fail, readJson, requireUser } from "@/lib/api-util";
+
+// POST /api/creator/apply {bio?, preferred_language?, avatar_url?}
+// Pendaftaran kreator: HANYA role FEMALE yang sudah age_verified.
+// Status akhir (VERIFIED/ACTIVE) HANYA bisa diubah admin via service_role.
+export async function POST(req: Request) {
+  const ctx = await requireUser();
+  if (!ctx) return fail("UNAUTHENTICATED", 401);
+  const { user, profile, svc } = ctx;
+
+  if (profile?.role !== "FEMALE") return fail("NOT_FEMALE", 403);
+  if (profile?.age_verified !== true) return fail("AGE_REQUIRED", 403);
+  if (profile?.account_status !== "ACTIVE") {
+    return fail("ACCOUNT_NOT_ELIGIBLE", 403);
+  }
+
+  const body = await readJson(req);
+  const bio =
+    typeof body?.bio === "string" ? body.bio.slice(0, 500) : null;
+  const preferredLanguage =
+    typeof body?.preferred_language === "string" &&
+    ["id", "en"].includes(body.preferred_language)
+      ? body.preferred_language
+      : "id";
+  const avatarUrl =
+    typeof body?.avatar_url === "string" && body.avatar_url.startsWith("https://")
+      ? body.avatar_url
+      : null;
+
+  const { error: upsertErr } = await svc.from("creator_profiles").upsert(
+    {
+      user_id: user.id,
+      bio,
+      preferred_language: preferredLanguage,
+      avatar_url: avatarUrl,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" }
+  );
+  if (upsertErr) return fail("DB_ERROR", 500);
+
+  const { error: profileErr } = await svc
+    .from("profiles")
+    .update({
+      verification_status: "PENDING_REVIEW",
+      creator_status: "PENDING",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", user.id);
+  if (profileErr) return fail("DB_ERROR", 500);
+
+  await svc.from("verification_records").insert({
+    user_id: user.id,
+    provider: "MANUAL_REVIEW",
+    verification_type: "IDENTITY_FACE",
+    status: "PENDING",
+  });
+
+  return ok({ status: "PENDING_REVIEW" });
+}
