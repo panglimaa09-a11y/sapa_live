@@ -1,10 +1,13 @@
 "use client";
 
+
 import { useState } from "react";
 import { getSupabase, supabaseConfigured } from "../lib/supabase";
 
+
 export default function GoogleButton() {
   const [busy, setBusy] = useState(false);
+
 
   const login = async () => {
     const sb = getSupabase();
@@ -17,10 +20,11 @@ export default function GoogleButton() {
     setBusy(true);
     await sb.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: "https://sapalive.my.id/auth/callback" },
     });
     setBusy(false);
   };
+
 
   return (
     <div>
