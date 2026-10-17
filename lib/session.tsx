@@ -85,6 +85,32 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     void refresh();
     const sb = getSupabase();
     if (!sb) return;
+
+    // Tangkap kode OAuth di URL mana pun — Supabase kadang redirect ke Site URL
+    // (/) alih-alih ke /auth/callback bila redirect URL belum di-whitelist.
+    (async () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get("code");
+        if (code) {
+          const { error } = await sb.auth.exchangeCodeForSession(code);
+          // Bersihkan code dari URL agar tidak di-exchange ulang
+          const url = new URL(window.location.href);
+          url.searchParams.delete("code");
+          window.history.replaceState({}, "", url.toString());
+          if (!error) {
+            await refresh();
+            // Arahkan ke welcome setelah login OAuth berhasil
+            if (window.location.pathname === "/") {
+              window.location.href = "/welcome";
+            }
+          }
+        }
+      } catch {
+        // Abaikan — bukan alur OAuth
+      }
+    })();
+
     const {
       data: { subscription },
     } = sb.auth.onAuthStateChange(() => {
