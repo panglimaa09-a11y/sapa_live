@@ -30,6 +30,14 @@ export default function OAuthCatcher() {
         if (!error) {
           // Login berhasil — arahkan ke welcome
           window.location.href = "/welcome";
+        } else {
+          // Debug: tampilkan error agar bisa dilacak
+          console.error("[OAuthCatcher] exchange gagal:", error.message);
+          // Simpan error ke sessionStorage untuk dibaca di halaman login
+          try {
+            sessionStorage.setItem("oauth_error", error.message);
+          } catch {}
+          window.location.href = "/login?error=auth&debug=" + encodeURIComponent(error.message.slice(0, 100));
         }
       } catch {
         // Abaikan — bukan alur OAuth
