@@ -89,7 +89,7 @@ export default async function SystemHealthPage() {
     staticCheck(
       "WebRTC / TURN server",
       "Koneksi media panggilan video.",
-      "Belum dikonfigurasi — memakai STUN publik. TURN wajib sebelum produksi."
+      "Aktif — Metered TURN (iceServers dinamis saat panggilan, fallback STUN publik)."
     ),
     staticCheck(
       "Email service",

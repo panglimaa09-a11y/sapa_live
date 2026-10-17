@@ -31,6 +31,7 @@ export default function MessagesPage() {
   const [active, setActive] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [draft, setDraft] = useState("");
+  const [sendError, setSendError] = useState("");
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
   const chRef = useRef<RealtimeChannel | null>(null);
@@ -136,13 +137,18 @@ export default function MessagesPage() {
     const sb = getSupabase();
     const body = draft.trim();
     if (!sb || !user || !active || !body) return;
-    setDraft("");
-    const thread = threads.find((x) => x.id === active);
-    await sb.from("messages").insert({
+    setSendError("");
+    const { error } = await sb.from("messages").insert({
       match_id: active,
       sender_id: user.id,
       body: body.slice(0, 2000),
     });
+    if (error) {
+      setSendError(t("common.error"));
+      return;
+    }
+    setDraft("");
+    const thread = threads.find((x) => x.id === active);
     if (thread) {
       await sb.from("notifications").insert({
         user_id: thread.other_id,
@@ -263,6 +269,11 @@ export default function MessagesPage() {
                   <PaperPlaneTilt size={20} weight="fill" />
                 </button>
               </div>
+              {sendError && (
+                <p className="border-t border-white/10 px-4 py-2 text-center text-sm text-red-300">
+                  {sendError}
+                </p>
+              )}
             </>
           )}
         </div>

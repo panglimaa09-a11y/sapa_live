@@ -316,6 +316,8 @@ export async function approveCreatorAction(
     status: "APPROVED",
     reviewed_by: staff.userId,
     reviewed_at: new Date().toISOString(),
+    face_verified_at: new Date().toISOString(),
+    face_liveness_passed: true,
   });
   await logAudit(staff.userId, "creator.approve", "profiles", userId, {});
   revalidatePath("/verifications");

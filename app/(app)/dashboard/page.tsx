@@ -27,30 +27,26 @@ export default function DashboardPage() {
     }
     let cancelled = false;
     (async () => {
-      const [matchesRes, walletRes, recentRes] = await Promise.all([
-        sb.from("matches").select("id,started_at,ended_at", { count: "exact" }).eq("user_id", user.id),
+      const [callsRes, walletRes, recentRes] = await Promise.all([
+        sb.from("calls").select("id,requested_at,ended_at,billable_duration_seconds", { count: "exact" }).eq("male_user_id", user.id),
         sb.from("wallets").select("tokens").eq("user_id", user.id).maybeSingle(),
         sb
-          .from("matches")
-          .select("id,ended_at,peer_id")
-          .eq("user_id", user.id)
+          .from("calls")
+          .select("id,ended_at,female_creator_id")
+          .eq("male_user_id", user.id)
           .order("ended_at", { ascending: false })
           .limit(5),
       ]);
       if (cancelled) return;
-      const rows = (matchesRes.data ?? []) as { started_at: string; ended_at: string | null }[];
-      const minutes = rows.reduce((acc, r) => {
-        if (r.started_at && r.ended_at)
-          acc += Math.max(0, (new Date(r.ended_at).getTime() - new Date(r.started_at).getTime()) / 60000);
-        return acc;
-      }, 0);
+      const rows = (callsRes.data ?? []) as { requested_at: string; ended_at: string | null; billable_duration_seconds: number }[];
+      const minutes = rows.reduce((acc, r) => acc + Math.round((r.billable_duration_seconds ?? 0) / 60), 0);
       setStats({
-        conversations: matchesRes.count ?? 0,
-        minutes: Math.round(minutes),
+        conversations: callsRes.count ?? 0,
+        minutes,
         tokens: (walletRes.data as { tokens: number } | null)?.tokens ?? 0,
       });
-      const recentList = (recentRes.data ?? []) as { id: string; ended_at: string | null; peer_id: string }[];
-      const peerIds = [...new Set(recentList.map((r) => r.peer_id).filter(Boolean))];
+      const recentList = (recentRes.data ?? []) as { id: string; ended_at: string | null; female_creator_id: string }[];
+      const peerIds = [...new Set(recentList.map((r) => r.female_creator_id).filter(Boolean))];
       const peerNames = new Map<string, string>();
       if (peerIds.length > 0) {
         const { data: pp } = await sb.from("public_profiles").select("id, display_name").in("id", peerIds);
@@ -59,7 +55,7 @@ export default function DashboardPage() {
       setRecent(
         recentList.map((r) => ({
           id: r.id,
-          displayName: peerNames.get(r.peer_id) ?? "—",
+          displayName: peerNames.get(r.female_creator_id) ?? "—",
           endedAt: r.ended_at,
         }))
       );

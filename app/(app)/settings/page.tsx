@@ -50,6 +50,7 @@ export default function SettingsPage() {
   const [allowRandom, setAllowRandom] = useState(true);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -59,12 +60,25 @@ export default function SettingsPage() {
   useEffect(() => {
     if (profile) {
       setName(profile.display_name);
-      setBio(profile.bio ?? "");
       setShowOnline(profile.show_online);
       setAllowRandom(profile.allow_random);
       setAvatarUrl(profile.avatar_url);
     }
   }, [profile]);
+
+  // Bio diambil dari creator_profiles (terpisah dari profiles)
+  useEffect(() => {
+    (async () => {
+      const sb = getSupabase();
+      if (!sb || !user) return;
+      const { data } = await sb
+        .from("creator_profiles")
+        .select("bio")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setBio((data as { bio?: string } | null)?.bio ?? "");
+    })();
+  }, [user]);
 
   const uploadAvatar = async (file: File) => {
     const sb = getSupabase();
@@ -100,21 +114,33 @@ export default function SettingsPage() {
     const sb = getSupabase();
     if (!sb || !user) return;
     setBusy(true);
-    await sb
-      .from("profiles")
-      .update({
-        display_name: name.trim().slice(0, 40) || profile?.display_name,
-        bio: bio.trim().slice(0, 300) || null,
-        language: lang,
-        show_online: showOnline,
-        allow_random: allowRandom,
-      })
-      .eq("id", user.id);
-    setLang(lang);
-    await refresh();
-    setBusy(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    setSaveError("");
+    try {
+      const { error: pErr } = await sb
+        .from("profiles")
+        .update({
+          display_name: name.trim().slice(0, 40) || profile?.display_name,
+          language: lang,
+          show_online: showOnline,
+          allow_random: allowRandom,
+        })
+        .eq("id", user.id);
+      if (pErr) throw pErr;
+      // Bio disimpan di creator_profiles (bukan profiles)
+      const { error: cErr } = await sb.from("creator_profiles").upsert(
+        { user_id: user.id, bio: bio.trim().slice(0, 300) || null },
+        { onConflict: "user_id" }
+      );
+      if (cErr) throw cErr;
+      setLang(lang);
+      await refresh();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch {
+      setSaveError(t("common.error"));
+    } finally {
+      setBusy(false);
+    }
   };
 
   const deleteAccount = async () => {
@@ -265,6 +291,11 @@ export default function SettingsPage() {
           {t("settings.saved")}
         </p>
       )}
+      {saveError && (
+        <p className="mt-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-center text-sm text-red-300">
+          {saveError}
+        </p>
+      )}
 
       <section className="mt-8 rounded-[28px] border border-white/10 bg-surface p-6">
         <h2 className="text-lg font-extrabold tracking-tight">
@@ -312,22 +343,22 @@ export default function SettingsPage() {
         )}
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-surface p-6">
-        <h2 className="text-lg font-extrabold">Undang Teman</h2>
-        <p className="mt-1 text-sm text-ink-soft">
-          Bagikan kode referral kamu. Setiap teman yang daftar pakai kodemu{" "}
-          <strong>dan lolos verifikasi wajah</strong> → kamu dapat{" "}
-          <strong>17 token</strong>.
-        </p>
-        {(profile as any)?.referral_code ? (
+      {(profile as { referral_code?: string })?.referral_code && (
+        <section className="rounded-3xl border border-white/10 bg-surface p-6">
+          <h2 className="text-lg font-extrabold">Undang Teman</h2>
+          <p className="mt-1 text-sm text-ink-soft">
+            Bagikan kode referral kamu. Setiap teman yang daftar pakai kodemu{" "}
+            <strong>dan lolos verifikasi wajah</strong> → kamu dapat{" "}
+            <strong>17 token</strong>.
+          </p>
           <div className="mt-4 flex items-center gap-3">
             <code className="rounded-2xl bg-base px-5 py-3 text-2xl font-extrabold tracking-widest text-accent">
-              {(profile as any).referral_code}
+              {(profile as { referral_code?: string }).referral_code}
             </code>
             <button
               onClick={() => {
-                const code = (profile as any).referral_code;
-                const url = `${window.location.origin}/register?ref=${code}`;
+                const code = (profile as { referral_code?: string }).referral_code;
+                const url = `https://sapalive.my.id/register?ref=${code}`;
                 navigator.clipboard.writeText(url).then(() =>
                   alert("Link undangan tersalin!")
                 );
@@ -337,10 +368,8 @@ export default function SettingsPage() {
               Salin Link
             </button>
           </div>
-        ) : (
-          <p className="mt-4 text-sm text-ink-soft">Memuat kode referral…</p>
-        )}
-      </section>
+        </section>
+      )}
     </div>
   );
 }

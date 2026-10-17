@@ -7,9 +7,7 @@ import {
   VideoCamera,
   SquaresFour,
   Phone,
-  Compass,
   ChatCircleText,
-  Users,
   Bell,
   Sparkle,
   Wallet,
@@ -57,9 +55,7 @@ export default function AppNav() {
     { href: "/dashboard", label: t("nav.dashboard"), icon: SquaresFour },
     { href: "/discover", label: t("nav.discover"), icon: Sparkle },
     { href: "/match", label: t("nav.match"), icon: Phone },
-    { href: "/explore", label: t("nav.explore"), icon: Compass },
     { href: "/messages", label: t("nav.messages"), icon: ChatCircleText },
-    { href: "/connections", label: t("nav.connections"), icon: Users },
     { href: "/wallet", label: t("nav.wallet"), icon: Wallet },
   ];
   const mobileTabs = [
