@@ -1,29 +1,34 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { VideoCamera } from "@phosphor-icons/react";
 
 /**
  * Strip kartu preview video call yang auto-scroll horizontal.
- * Visual abstrak (gradien + inisial) — tanpa foto orang asli.
+ * Menggunakan avatar ilustrasi (bukan foto orang asli).
  */
 const PREVIEWS = [
-  { name: "Sinta", grad: "from-rose-400 to-orange-300", online: true },
-  { name: "Rani", grad: "from-violet-400 to-fuchsia-300", online: true },
-  { name: "Dewi", grad: "from-sky-400 to-cyan-300", online: true },
-  { name: "Putri", grad: "from-amber-400 to-yellow-300", online: false },
-  { name: "Nadia", grad: "from-emerald-400 to-teal-300", online: true },
-  { name: "Laras", grad: "from-indigo-400 to-blue-300", online: true },
-  { name: "Intan", grad: "from-pink-400 to-rose-300", online: false },
-  { name: "Wulan", grad: "from-teal-400 to-green-300", online: true },
+  { name: "Sinta", img: "/avatars/avatar-sinta.jpg", online: true },
+  { name: "Rani", img: "/avatars/avatar-rani.jpg", online: true },
+  { name: "Dewi", img: "/avatars/avatar-dewi.jpg", online: true },
+  { name: "Nadia", img: "/avatars/avatar-nadia.jpg", online: true },
+  { name: "Sinta", img: "/avatars/avatar-sinta.jpg", online: false },
+  { name: "Rani", img: "/avatars/avatar-rani.jpg", online: false },
+  { name: "Dewi", img: "/avatars/avatar-dewi.jpg", online: false },
+  { name: "Nadia", img: "/avatars/avatar-nadia.jpg", online: true },
 ];
 
-function Card({ name, grad, online }: { name: string; grad: string; online: boolean }) {
+function Card({ name, img, online }: { name: string; img: string; online: boolean }) {
   return (
     <div className="relative h-44 w-32 shrink-0 overflow-hidden rounded-2xl border border-white/10">
-      <div className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${grad}`}>
-        <span className="text-4xl font-extrabold text-white/90">{name[0]}</span>
-      </div>
+      <Image
+        src={img}
+        alt={name}
+        fill
+        sizes="128px"
+        className="object-cover"
+      />
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
         <p className="truncate text-xs font-bold text-white">{name}</p>
         <p className="flex items-center gap-1 text-[10px] font-medium text-white/80">
@@ -76,7 +81,7 @@ export default function HeroVisual() {
         style={{ scrollbarWidth: "none" }}
       >
         {doubled.map((p, i) => (
-          <Card key={i} name={p.name} grad={p.grad} online={p.online} />
+          <Card key={i} name={p.name} img={p.img} online={p.online} />
         ))}
       </div>
       <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-base to-transparent" />
