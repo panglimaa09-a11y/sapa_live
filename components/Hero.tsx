@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react";
 import { useLang } from "../lib/i18n";
 import LiveCounter from "./LiveCounter";
+import HeroVisual from "./HeroVisual";
 
 export default function Hero() {
   const { t } = useLang();
@@ -53,6 +54,7 @@ export default function Hero() {
           </p>
         </div>
       </div>
+      <HeroVisual />
     </section>
   );
 }
