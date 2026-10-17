@@ -55,7 +55,7 @@ function LoginInner() {
     setResetBusy(true);
     try {
       const { error: err } = await sb.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: "https://sapalive.my.id/auth/callback",
       });
       if (err) throw err;
       setResetSent(true);
