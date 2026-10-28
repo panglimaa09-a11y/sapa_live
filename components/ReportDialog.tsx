@@ -99,7 +99,7 @@ export default function ReportDialog({
                     name="report-reason"
                     checked={reason === r}
                     onChange={() => setReason(r)}
-                    className="accent-[#6c7cff]"
+                    className="accent-accent"
                   />
                   {r}
                 </label>

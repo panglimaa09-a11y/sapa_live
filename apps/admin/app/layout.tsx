@@ -1,12 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-// avoid-ai-design-ignore: T1 (Inter dimandatkan PRD addendum v1.2)
-const inter = Inter({
+// Bahasa desain SapaLive (diselaraskan dengan aplikasi utama, audit 28 Okt 2026):
+// Plus Jakarta Sans untuk teks, Fraunces untuk headline. Catatan lama yang menyebut
+// Inter dimandatkan PRD tidak lagi berlaku untuk tipografi panel ini.
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-jakarta",
   weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -31,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className={inter.variable}>
+    <html lang="id" className={`${jakarta.variable} ${fraunces.variable}`}>
       <body className="min-h-dvh bg-paper font-sans text-ink antialiased">
         {children}
       </body>

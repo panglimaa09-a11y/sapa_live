@@ -5,7 +5,7 @@ export default function MfaSetupPage() {
     <main className="flex min-h-dvh items-center justify-center bg-paper px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-extrabold tracking-tight">
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
             Aktifkan authenticator
           </h1>
           <p className="mt-1 text-sm text-ink-soft">

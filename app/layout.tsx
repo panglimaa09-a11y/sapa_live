@@ -1,4 +1,4 @@
-// avoid-ai-design-ignore-file: T1 (PRD mandates Inter)
+// Bahasa desain SapaLive: Plus Jakarta Sans untuk teks, Fraunces untuk headline.
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b1020",
+  themeColor: "#161210",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

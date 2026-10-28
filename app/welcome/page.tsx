@@ -172,7 +172,7 @@ export default function WelcomePage() {
               type="checkbox"
               checked={agree}
               onChange={(e) => setAgree(e.target.checked)}
-              className="mt-1 h-4 w-4 accent-[#6c7cff]"
+              className="mt-1 h-4 w-4 accent-accent"
             />
             <span className="font-semibold text-ink-soft">{t("auth.age_confirm")}</span>
           </label>
